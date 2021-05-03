@@ -95,4 +95,136 @@ footer {
   left: 0;
 }
 
+.editor {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: column wrap;
+}
+.editor .grid {
+  height: 100vh;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.56);
+  width: 40%;
+  display: grid;
+  grid-template-columns: 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px;
+  grid-template-rows: 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px;
+  justify-content: center;
+  align-content: center;
+}
+.editor .grid .grid-element {
+  width: 50px;
+  height: 50px;
+  border: #030303 1px solid;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.56);
+}
+.editor .menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: column nowrap;
+  height: 100vh;
+  width: 25%;
+  border: 3px solid black;
+}
+.editor .menu .element-menu {
+  width: 100%;
+  margin: 0.1rem;
+  padding: 1rem;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: row wrap;
+}
+.editor .menu .element-menu.server-operation {
+  background-color: #000000;
+  transition: 0.5s;
+}
+.editor .menu .element-menu.server-operation:hover {
+  background-color: #626262;
+}
+.editor .menu .element-menu.enemy {
+  background-color: #cb1c50;
+  transition: 0.5s;
+}
+.editor .menu .element-menu.enemy:hover {
+  background-color: #45091b;
+}
+.editor .menu .element-menu.wall {
+  background-color: #3eba23;
+  transition: 0.5s;
+}
+.editor .menu .element-menu.wall:hover {
+  background-color: #13390b;
+}
+.editor .menu .element-menu.light {
+  background-color: #fcdc00;
+  transition: 0.5s;
+}
+.editor .menu .element-menu.light:hover {
+  background-color: #635600;
+}
+.editor .menu .element-menu.treasure {
+  background-color: #51afff;
+  transition: 0.5s;
+}
+.editor .menu .element-menu.treasure:hover {
+  background-color: #0063b7;
+}
+.editor .menu .element-menu.delete {
+  background-color: rgba(170, 170, 170, 0.67);
+  transition: 0.5s;
+}
+.editor .menu .element-menu.delete:hover {
+  background-color: rgba(94, 94, 94, 0.67);
+}
+.editor .terminal {
+  margin: 0 1rem;
+  height: 80vh;
+  width: 30%;
+  background-color: #212121;
+  overflow-y: scroll;
+  border-radius: 0 0 45px 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: row wrap;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.56);
+}
+.editor .terminal .header {
+  align-self: flex-start;
+  height: 5vh;
+  width: 100%;
+  background-color: #030303;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-flow: row nowrap;
+  padding: 1rem;
+}
+.editor .terminal .header .dot1 {
+  border-radius: 50%;
+  min-width: 2vh;
+  min-height: 2vh;
+  background-color: #cb1c50;
+  margin-left: 0.1rem;
+}
+.editor .terminal .header .dot2 {
+  border-radius: 50%;
+  min-width: 2vh;
+  min-height: 2vh;
+  background-color: #fcdc00;
+  margin-left: 0.1rem;
+}
+.editor .terminal .header .dot3 {
+  border-radius: 50%;
+  min-width: 2vh;
+  min-height: 2vh;
+  background-color: #3eba23;
+  margin-left: 0.1rem;
+}
+
 /*# sourceMappingURL=main.css.map */

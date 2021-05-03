@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FPS GAME - THREE.js + KOTLIN SPARK</title>
+    <link rel="stylesheet" href="main.css">
+    <script>
+        window.addEventListener("DOMContentLoaded", ()=>{
+            for (let i = 0; i < 10; i++){
+                for (let j = 0; j < 10; j++){
+                    let div = document.createElement("div");
+                    div.classList.add("grid-element");
+                    document.querySelector('.grid').append(div);
+                }
+            }
+        });
+    </script>
+</head>
+<body>
+<div class="editor">
+    <div class="grid"></div>
+    <div class="menu">
+        <div class="element-menu server-operation">Save Level on server</div>
+        <div class="element-menu server-operation">Save test Level on server</div>
+        <div class="element-menu server-operation">Load Level from server</div>
+        <div class="element-menu"></div>
+
+        <div class="element-menu wall">Wall</div>
+        <div class="element-menu enemy">Enemy</div>
+        <div class="element-menu treasure">Treasure</div>
+        <div class="element-menu light">Light</div>
+        <div class="element-menu delete">Delete</div>
+    </div>
+    <div class="terminal">
+        <div class="header">
+            <div class="dot1"></div><div class="dot2"></div><div class="dot3"></div>
+        </div>
+        <div class="json"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,10 +1,32 @@
 $bg: #3e3e3e;
+$enemy: #cb1c50;
+$wall: #3eba23;
+$light: #fcdc00;
+$treasure: #51afff;
+$delete: rgba(170, 170, 170, 0.67);
+
+$editorColors: (
+    enemy: #cb1c50,
+    wall: #3eba23,
+    light: #fcdc00,
+    treasure: #51afff,
+    delete: rgba(170, 170, 170, 0.67)
+);
+
+$shadow: 0px 0px 10px rgba(0, 0, 0, 0.56);
 
 @mixin df($dir,$wrap, $xPos: center ,$yPos: center){
   display: flex;
   align-items: $yPos;
   justify-content: $xPos;
   flex-flow: $dir $wrap;
+}
+
+@mixin classicHover($color){
+  transition: .5s;
+  &:hover{
+    background-color: darken($color,30%);
+  }
 }
 
 * {
@@ -102,4 +124,110 @@ footer {
   position: fixed;
   top: 0;
   left: 0;
+}
+
+
+.editor{
+  width: 100vw;
+  height: 100vh;
+  @include df(column, wrap);
+  .grid{
+    height: 100vh;
+    box-shadow: $shadow;
+    width: 40%;
+
+
+  display: grid;
+    grid-template-columns: 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px;
+    grid-template-rows: 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px;
+    justify-content: center;
+    align-content: center;
+
+    .grid-element {
+      width: 50px;
+      height: 50px;
+      border: #030303 1px solid;
+      box-shadow: $shadow;
+    }
+  }
+  .menu {
+    @include df(column, nowrap);
+    height: 100vh;
+    width: 25%;
+    border: 3px solid black;
+    .element-menu {
+      width: 100%;
+      margin: .1rem;
+      padding: 1rem;
+      cursor: pointer;
+      color: #fff;
+
+      @include df(row, wrap);
+      &.server-operation{
+        background-color: #000000;
+        transition: .5s;
+
+        &:hover{
+          background-color: #626262;
+        }
+      }
+      @each $name,$color in $editorColors{
+        &.#{$name}{
+            background-color: $color;
+            @include classicHover($color);
+        }
+      }
+    }
+
+  }
+  .terminal {
+    margin: 0 1rem;
+    height: 80vh;
+    width: 30%;
+    background-color: rgba(33,33,33,1);
+    overflow-y: scroll;
+    border-radius: 0 0 45px 45px;
+    @include df(row,wrap);
+    box-shadow: $shadow;
+
+    .header{
+      align-self: flex-start;
+      height: 5vh;
+      width: 100%;
+      background-color: rgb(3,3,3);
+      @include df(row, nowrap, flex-start, center);
+      padding: 1rem;
+      .dot1 {
+        border-radius: 50%;
+        min-width: 2vh;
+        min-height: 2vh;
+        background-color: #cb1c50;
+        margin-left: .1rem;
+      }
+      .dot2 {
+        border-radius: 50%;
+        min-width: 2vh;
+        min-height: 2vh;
+        background-color: #fcdc00;
+        margin-left: .1rem;
+      }
+      .dot3 {
+        border-radius: 50%;
+        min-width: 2vh;
+        min-height: 2vh;
+        background-color: #3eba23;
+        margin-left: .1rem;
+      }
+    }
+    //&::before{
+    //  position: relative;
+    //  top: 20px;
+    //  left: 0;
+    //  height: 20px;
+    //  width: 100%;
+    //  //background-color: rgb(3, 3, 3);
+    //  background-color: green;
+    //  z-index: 2;
+    //}
+  }
 }
