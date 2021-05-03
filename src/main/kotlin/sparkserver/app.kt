@@ -13,8 +13,8 @@ fun main() {
 
     get("/") { req,res -> "index.html" } // get pliku index.html
     get("/game") { req,res -> "game.html" } // get pliku game.html
-    get("/editor") { req,res -> "ediitor.html" } // get pliku editor.html
-    post("/add") { req,res -> "index.html" } // dodanie danych levelu
+    get("/editor") { req,res -> "editor.html" } // get pliku editor.html
+    post("/add") { req,res -> add(req,res) } // dodanie danych levelu
     post("/load") { req,res -> load(req,res) } // pobranie danych levelu
 
 }
@@ -26,6 +26,10 @@ fun getHerokuPort(): Int {
     } else 5000
 }
 
-fun load(req:Request,res:Response){
+fun add(req: Request, res: Response){
+//    to dodaje jsona to listy
+}
 
+fun load(req:Request,res:Response){
+    // to zwraca jsona
 }
