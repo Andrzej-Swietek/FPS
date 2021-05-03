@@ -148,6 +148,13 @@ footer {
       height: 50px;
       border: #030303 1px solid;
       box-shadow: $shadow;
+
+      @each $name,$color in $editorColors{
+        &.#{$name}{
+          background-color: $color;
+          @include classicHover($color);
+        }
+      }
     }
   }
   .menu {

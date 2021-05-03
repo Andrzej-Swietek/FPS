@@ -5,14 +5,35 @@
     <title>FPS GAME - THREE.js + KOTLIN SPARK</title>
     <link rel="stylesheet" href="main.css">
     <script>
+        let state = {
+            mode: '',
+            modes: ['wall','enemy','light', 'treasure'],
+            level: [] // tablica objektów
+        };
         window.addEventListener("DOMContentLoaded", ()=>{
             for (let i = 0; i < 10; i++){
                 for (let j = 0; j < 10; j++){
                     let div = document.createElement("div");
                     div.classList.add("grid-element");
+                    div.dataset.x = j;
+                    div.dataset.y = i;
+                    div.addEventListener('click', (e)=> {
+                        console.log(e.target, e.target.dataset.x, e.target.dataset.y);
+                        e.target.classList.add(state.mode);
+                        // TODO: dorobic zmiane scian i wrzucanie w statea.level
+                    });
                     document.querySelector('.grid').append(div);
                 }
             }
+
+            state.modes.forEach( m =>{
+                document.querySelector(`.element-menu.${m}`).addEventListener('click',()=>{
+                    state.mode = m;
+                    console.log(state.mode);
+                });
+            })
+
+
         });
     </script>
 </head>
