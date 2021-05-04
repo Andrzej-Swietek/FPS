@@ -1,6 +1,7 @@
 package sparkserver
 
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import spark.Request
 import spark.Response
 import spark.Spark.*
@@ -36,10 +37,16 @@ fun serveEditor(req: Request,res: Response) {
     res.redirect("editor.html")
 }
 
-fun add(req: Request, res: Response){
+fun add(req: Request, res: Response) {
+    res.header("Access-Control-Allow-Origin", "*");
 //    to dodaje jsona to listy
+    println(req.body())
+    val type = object : TypeToken<MutableList<LevelItem>>() {}.type
+    var list: MutableList<LevelItem> = Gson().fromJson(req.body(), type)
 }
 
-fun load(req:Request,res:Response){
+fun load(req:Request,res:Response):String {
+    res.header("Access-Control-Allow-Origin", "*");
     // to zwraca jsona
+    return Gson().toJson(req.body())
 }

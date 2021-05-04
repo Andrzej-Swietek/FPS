@@ -169,6 +169,7 @@ footer {
   padding: 1rem;
   cursor: pointer;
   color: #fff;
+  border: 3px solid #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -188,12 +189,18 @@ footer {
 .editor .menu .element-menu.enemy:hover {
   background-color: #45091b;
 }
+.editor .menu .element-menu.enemy.active {
+  border: 3px solid #881336 !important;
+}
 .editor .menu .element-menu.wall {
   background-color: #3eba23;
   transition: 0.5s;
 }
 .editor .menu .element-menu.wall:hover {
   background-color: #13390b;
+}
+.editor .menu .element-menu.wall.active {
+  border: 3px solid #297a17 !important;
 }
 .editor .menu .element-menu.light {
   background-color: #fcdc00;
@@ -202,12 +209,18 @@ footer {
 .editor .menu .element-menu.light:hover {
   background-color: #635600;
 }
+.editor .menu .element-menu.light.active {
+  border: 3px solid #b09900 !important;
+}
 .editor .menu .element-menu.treasure {
   background-color: #51afff;
   transition: 0.5s;
 }
 .editor .menu .element-menu.treasure:hover {
   background-color: #0063b7;
+}
+.editor .menu .element-menu.treasure.active {
+  border: 3px solid #058cff !important;
 }
 .editor .menu .element-menu.delete {
   background-color: rgba(170, 170, 170, 0.67);
@@ -216,6 +229,9 @@ footer {
 .editor .menu .element-menu.delete:hover {
   background-color: rgba(94, 94, 94, 0.67);
 }
+.editor .menu .element-menu.delete.active {
+  border: 3px solid rgba(132, 132, 132, 0.67) !important;
+}
 .editor .menu .element-menu.exit {
   position: fixed;
   bottom: 0;
@@ -223,6 +239,7 @@ footer {
   width: 100%;
   background-color: #a1a;
   transition: 0.5s;
+  margin: 0;
 }
 .editor .menu .element-menu.exit:hover {
   background-color: #1f031f;

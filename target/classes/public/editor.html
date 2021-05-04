@@ -4,47 +4,18 @@
     <meta charset="UTF-8">
     <title>FPS GAME - THREE.js + KOTLIN SPARK</title>
     <link rel="stylesheet" href="main.css">
-    <script>
-        let state = {
-            mode: '',
-            modes: ['wall','enemy','light', 'treasure']
-        };
-        window.addEventListener("DOMContentLoaded", ()=>{
-            for (let i = 0; i < 10; i++){
-                for (let j = 0; j < 10; j++){
-                    let div = document.createElement("div");
-                    div.classList.add("grid-element");
-                    div.dataset.x = j;
-                    div.dataset.y = i;
-                    div.addEventListener('click', (e)=> {
-                        console.log(e.target, e.target.dataset.x, e.target.dataset.y);
-                        e.target.classList.add(state.mode);
-                    });
-                    document.querySelector('.grid').append(div);
-                }
-            }
-
-            state.modes.forEach( m =>{
-                document.querySelector(`.element-menu.${m}`).addEventListener('click',()=>{
-                    state.mode = m;
-                    console.log(state.mode);
-                });
-            })
-
-
-        });
-    </script>
+    <script src="editor.js"></script>
 </head>
 <body>
 <div class="editor">
     <div class="grid"></div>
     <div class="menu">
-        <div class="element-menu server-operation">Save Level on server</div>
+        <div class="element-menu server-operation" id="save">Save Level on server</div>
         <div class="element-menu server-operation">Save test Level on server</div>
-        <div class="element-menu server-operation">Load Level from server</div>
+        <div class="element-menu server-operation" id="load">Load Level from server</div>
         <div class="element-menu"></div>
 
-        <div class="element-menu wall">Wall</div>
+        <div class="element-menu wall active">Wall</div>
         <div class="element-menu enemy">Enemy</div>
         <div class="element-menu treasure">Treasure</div>
         <div class="element-menu light">Light</div>

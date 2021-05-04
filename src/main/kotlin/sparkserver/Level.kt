@@ -1,0 +1,5 @@
+package sparkserver
+
+class Level {
+
+}
