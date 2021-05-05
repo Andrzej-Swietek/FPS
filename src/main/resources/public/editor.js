@@ -98,7 +98,7 @@ window.addEventListener("DOMContentLoaded", ()=>{
                })
                data.forEach( (levelItem) => {
                    document.querySelector(`.grid-element[data-x="${levelItem.x}"][data-y="${levelItem.z}"]`).classList.add(`${levelItem.type}`);
-                   state.level.push({ "id": levelItem.id, "x": levelItem.x, "y": levelItem.y, "type": levelItem.type })
+                   state.level.push({ "id": levelItem.id, "x": levelItem.x, "y": 0, "z": levelItem.z, "type": levelItem.type })
                })
                document.querySelector('#json').value = JSON.stringify(state.level,null, 2);
            });
