@@ -1,0 +1,44 @@
+$bg: #aacaf3;
+$vue-text-color: #2c3e50;
+$shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);
+$shadow2: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
+$shadow3: rgba(0, 0, 0, 0.08) 0px 4px 12px;
+
+@mixin df ($dir,$wrap){
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: $dir $wrap;
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: $bg;
+  @include df(column,nowrap);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+h1  {
+  font-size: 3rem;
+  font-weight: 900;
+  text-transform: capitalize;
+}
+.title-bar {
+  padding: 1rem;
+  color: $vue-text-color;
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-align: center;
+  width: 100%;
+  box-shadow: $shadow;
+}
