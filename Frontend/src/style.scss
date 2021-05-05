@@ -4,10 +4,13 @@ $shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);
 $shadow2: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
 $shadow3: rgba(0, 0, 0, 0.08) 0px 4px 12px;
 
-@mixin df ($dir,$wrap){
+$txtColor: azure;
+$settingsBg: #545353;
+
+@mixin df ($dir,$wrap,$x: center,$y: center){
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: $y;
+  justify-content: $x;
   flex-flow: $dir $wrap;
 }
 
@@ -41,4 +44,89 @@ h1  {
   text-align: center;
   width: 100%;
   box-shadow: $shadow;
+}
+.settings {
+  color: azure;
+  transition: 2s ease-in-out;
+  @include df(row, nowrap);
+  justify-content: space-between;
+  min-height: 20vh;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: rgba($settingsBg, .7);
+  box-shadow: $shadow;
+
+  .slider-element-container {
+    margin: 1rem;
+    padding: 1rem;
+    @include df(column, nowrap);
+
+    h5 {
+      margin-bottom: 1rem;
+    }
+  }
+
+  .checkbox-element-container {
+    width: 30%;
+    @include df(column, nowrap, center, flex-start);
+    justify-self: flex-end;
+    padding: 0 2rem;
+    border-left: 3px solid black;
+    height: 20vh;
+    background: darken($settingsBg,15%);
+    font-size: 1.6rem;
+    color: azure;
+    div {
+      margin: 1rem 0;
+      @include df(row, nowrap);
+      input {
+        order: 1;
+        height: 1.6rem;
+        width: 1.6rem;
+      }
+      h5 {
+        margin-left: 1rem;
+        order: 2;
+      }
+    }
+  }
+}
+
+#sidebar {
+  position: absolute;
+  right: 0;
+  @include df(column,nowrap);
+
+  #toggle{
+    width: 100px;
+    height: 100px;
+    background-color: $settingsBg;
+
+    box-shadow: $shadow;
+    @include df(row, nowrap);
+    color: $txtColor;
+    font-size: 2rem;
+    transition: .5s;
+
+    &:hover{
+      color: darken($txtColor,20%);
+      background-color: darken($settingsBg,20%);
+      font-size: 2.1rem;
+      cursor: pointer;
+    }
+  }
+  #home {
+    @extend #toggle;
+    a{
+      text-decoration: none;
+      //color: $txtColor;
+      color: inherit;
+    }
+  }
+}
+
+.d-n {
+  display: none;
 }
