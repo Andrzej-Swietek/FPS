@@ -13,6 +13,8 @@ import { Scene } from 'three';
 import Renderer from './Renderer';
 import Camera from './Camera';
 import GUI from './GUI';
+import Net from "./Net";
+import Floor from "./Floor";
 
 export default class Main {
     constructor(container) {
@@ -25,24 +27,27 @@ export default class Main {
         this.renderer = new Renderer(this.scene, container);
         this.camera = new Camera(this.renderer.threeRenderer);
 
-        // light
+        // ==================== LIGHT ====================
 
         // const light = new THREE.PointLight( 0xff0000, 1, 100 );
         // this.light.position.set( 50, 50, 50 );
         // this.scene.add( light );
-        // grid - testowa siatka na podłoże modelu
+
+        // ==================== GRID ====================
+        // testowa siatka na podłoże modelu
 
         const gridHelper = new GridHelper(1000, 10);
         this.scene.add(gridHelper);
 
-        //stats - statystyki wydajności
+        // ==================== STATS ====================
+        // statystyki wydajności
 
         this.stats = new Stats();
         this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb
 
         document.body.appendChild(this.stats.dom);
 
-        // zegar - vide lekcja 4
+        // ==================== ZEGAR ====================
 
         this.clock = new Clock()
 
@@ -50,11 +55,10 @@ export default class Main {
 
         this.manager = new LoadingManager();
 
-        // model
+        // ==================== MODEL ====================
 
         this.model = new Model(this.scene, this.manager);
         this.model.load("./dist/assets/boba.md2");
-
         // moniytor progressu ładowania
 
         this.manager.onProgress = (item, loaded, total) => {
@@ -76,6 +80,9 @@ export default class Main {
             // przykładowa animacja z modelu Mario
 
             this.animation.playAnim("crwalk")
+            // this.animation.playAnim("crattak")
+            // this.animation.playAnim("jump")
+            // this.animation.playAnim("jump")
 
             //kawiatura
 
@@ -84,14 +91,18 @@ export default class Main {
         };
 
 
+
+        this.floor = new Floor(this.scene);
         this.render();
 
         this.GUI = new GUI();
+        this.net = new Net();
+        this.net.getMap()
+
+
     }
 
     render() {
-
-
 
         // początek pomiaru wydajności
         this.stats.begin()
@@ -100,7 +111,7 @@ export default class Main {
 
 
         // delta do animacji
-        var delta = this.clock.getDelta();
+        let delta = this.clock.getDelta();
 
         // wykonanie funkcji update w module Animations - zobacz do pliku Animations
         if (this.animation) this.animation.update(delta)
@@ -121,6 +132,9 @@ export default class Main {
             if (Config.moveForward) {
                 this.model.mesh.translateX(3)
             }
+            if (Config.moveBackward) {
+                this.model.mesh.translateX(-3)
+            }
             const camVect = new Vector3(-100, 50, 0)
 
             const camPos = camVect.applyMatrix4(this.model.mesh.matrixWorld);
@@ -135,5 +149,6 @@ export default class Main {
 
         requestAnimationFrame(this.render.bind(this));
     }
+
 }
 

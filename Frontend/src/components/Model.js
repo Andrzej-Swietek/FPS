@@ -29,7 +29,7 @@ export default class Model {
                     map: new TextureLoader().load(marioTex), // dowolny plik png, jpg
                     morphTargets: true // animowanie materiału modelu
                 }))
-
+                this.mesh.position.set(0,0,0);
                 this.scene.add(this.mesh);
                 console.log(this.geometry.animations) // tu powinny być widoczne animacje
 

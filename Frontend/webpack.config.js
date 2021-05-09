@@ -15,7 +15,7 @@ module.exports = {
 
     // DEV SERVER
     devServer: {
-        port: 8081
+        port: 5001
     },
 
     // FOR HTML
@@ -23,7 +23,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             hash: true,
             filename: 'index.html', //relative to root of the application
-            title:"THREEJS Webpack Project",//page title
+            title:"FPS Project",//page title
             template: './src/index.html',
             // h1:"h1",
             // h2:"h2"

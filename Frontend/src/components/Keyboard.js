@@ -6,6 +6,10 @@ const KEYS = {
     "up": 38,
     "right": 39,
     "down": 40,
+    "w": 87,
+    "s": 83,
+    "a": 65,
+    "d": 68
 };
 
 export default class Keyboard {
@@ -25,13 +29,20 @@ export default class Keyboard {
     onKeyUp(event) {
         switch (event.keyCode) {
             case KEYS.up:
+            case KEYS.w:
                 Config.moveForward = false;
                 break;
             case KEYS.left:
+            case KEYS.a:
                 Config.rotateLeft = false;
                 break;
             case KEYS.right:
+            case KEYS.d:
                 Config.rotateRight = false;
+                break;
+            case KEYS.down:
+            case KEYS.s:
+                Config.moveBackward = false;
                 break;
 
 
@@ -42,13 +53,20 @@ export default class Keyboard {
     onKeyDown(event) {
         switch (event.keyCode) {
             case KEYS.up:
+            case KEYS.w:
                 Config.moveForward = true;
                 break;
             case KEYS.left:
+            case KEYS.a:
                 Config.rotateLeft = true;
                 break;
             case KEYS.right:
+            case KEYS.d:
                 Config.rotateRight = true;
+                break;
+            case KEYS.down:
+            case KEYS.s:
+                Config.moveBackward = true;
                 break;
         }
 

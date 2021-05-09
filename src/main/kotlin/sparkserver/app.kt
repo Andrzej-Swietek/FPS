@@ -14,7 +14,7 @@ fun main() {
     port(getHerokuPort())
 
 
-    get("/") { req,res -> "index.html" } // get pliku index.html
+    get("/") { req,res -> "game.html" } // get pliku game.html
     get("/game") { req,res -> serveGame(req,res) } // get pliku game.html
     get("/editor") { req,res -> serveEditor(req,res) } // get pliku editor.html
     post("/add") { req,res -> add(req,res) } // dodanie danych levelu
@@ -52,5 +52,12 @@ fun add(req: Request, res: Response) {
 fun load(req:Request,res:Response):String {
     res.header("Access-Control-Allow-Origin", "*");
     // to zwraca jsona
-    return Gson().toJson(level.levelItemsList)
+    res.type("application/json")
+    println(Gson().toJson(level.levelItemsList))
+
+    val respData = Gson().toJson(level.levelItemsList)
+
+    println( respData )
+
+    return respData
 }

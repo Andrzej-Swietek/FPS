@@ -125,8 +125,152 @@ h1  {
       color: inherit;
     }
   }
+  #toggleHP {
+    @extend #toggle;
+  }
 }
 
 .d-n {
   display: none;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  position: relative
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 300px;
+  height: 2px;
+  border: none;
+  border-radius: 3px
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  border: none;
+  height: 12px;
+  width: 12px;
+  border-radius: 510%;
+  background: #141414;
+  border: 2px solid #515151;
+  margin-top: -5px;
+  cursor: pointer
+}
+
+.focused::-webkit-slider-thumb {
+  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.15)
+}
+
+.clicked::-webkit-slider-thumb {
+  -webkit-transform: scale(1.5)
+}
+
+.disabled::-webkit-slider-thumb {
+  -webkit-transform: scale(0.9);
+  box-shadow: 0 0 0 3px #141414;
+  background: #515151 !important;
+  border-color: #515151 !important
+}
+
+input[type=range]:focus {
+  outline: none
+}
+
+.rangeM input[type=range].disabled::-webkit-slider-runnable-track {
+  background: #515151!important
+}
+
+.rangeM input[type=range]::-webkit-slider-thumb {
+  background: #3f51b5;
+  border-color: #3f51b5
+}
+
+.range:hover input[type=range]:before {
+  color: white;
+  content: '50';
+  position: absolute;
+  font-family: Roboto Slab;
+  top: -49px;
+  background: #3f51b5;
+  padding: 8px 0 3px;
+  font-size: 14px;
+  width: 30px;
+  text-align: center;
+  border-radius: 100% 100% 0 0
+}
+
+.range:hover input[type=range]:after {
+  content: '';
+  position: absolute;
+  top: -19px;
+  left: 50px;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 8px solid #3f51b5;
+  font-family: Roboto Slab
+}
+
+.personStats {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20vh;
+  width: 30%;
+  //border: 3px solid red;
+  @include df(row , nowrap, flex-start, center);
+  background-color: #545353;
+  border-radius: 0 0 40px 0;
+  overflow: hidden;
+  box-shadow: $shadow;
+
+  img {
+    width: 40%;
+    overflow: hidden;
+    border-radius: 40px;
+    border: 3px azure solid;
+  }
+  div{
+    width: 60%;
+    height: 100%;
+    @include df(row , wrap, flex-start, center);
+
+    .hp {
+      height: 20%;
+      width: 100%;
+      background-color: #f68989;
+      .hp-progress {
+        background-color: #d72121;
+        width: 50%;
+        height: 100%;
+        z-index: 10;
+        border-radius: 0 40px 40px 0;
+      }
+    }
+    .mp {
+      height: 20%;
+      width: 100%;
+      background-color: #7f86d9;
+      .mp-progress {
+        background-color: #2133d7;
+        width: 50%;
+        height: 100%;
+        z-index: 10;
+        border-radius: 0 40px 40px 0;
+      }
+    }
+    .exp {
+      height: 20%;
+      width: 100%;
+      background-color: #5e3c79;
+      .exp-progress {
+        background-color: #560d83;
+        width: 50%;
+        height: 100%;
+        z-index: 10;
+        border-radius: 0 40px 40px 0;
+      }
+    }
+  }
+
 }

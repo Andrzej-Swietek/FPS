@@ -207,9 +207,9 @@ Polecenia wewnątrz %% pobierają stałe dane title, h1,h2 lub inne, z pliku web
 plugins: [
     new HtmlWebpackPlugin({
         hash: true,
-        filename: './index.html',
+        filename: './game.html',
         title:"page title",
-        template: './index.html',
+        template: './game.html',
         h1:"h1",
         h2:"h2"
         })

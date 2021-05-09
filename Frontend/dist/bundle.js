@@ -21,7 +21,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nbody {\n  margin: 0;\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  background-color: #aacaf3;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: column nowrap;\n  font-family: Arial, Helvetica, sans-serif;\n}\n\nh1 {\n  font-size: 3rem;\n  font-weight: 900;\n  text-transform: capitalize;\n}\n\n.title-bar {\n  padding: 1rem;\n  color: #2c3e50;\n  position: absolute;\n  top: 0;\n  left: 0;\n  text-align: center;\n  width: 100%;\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n}\n\n/*# sourceMappingURL=style.css.map */\n", "",{"version":3,"sources":["webpack://./src/style.scss","webpack://./src/style.css"],"names":[],"mappings":"AAcA;EACE,SAAA;EACA,UAAA;EACA,sBAAA;ACbF;;ADeA;EACE,SAAA;EACA,UAAA;EACA,WAAA;EACA,YAAA;EACA,yBAxBG;EAOH,aAAA;EACA,mBAAA;EACA,uBAAA;EACA,wBAAA;EAgBA,yCAAA;ACTF;;ADYA;EACE,eAAA;EACA,gBAAA;EACA,0BAAA;ACTF;;ADWA;EACE,aAAA;EACA,cAnCe;EAoCf,kBAAA;EACA,MAAA;EACA,OAAA;EACA,kBAAA;EACA,WAAA;EACA,2CAxCO;ACgCT;;AAEA,oCAAoC","sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nbody {\n  margin: 0;\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  background-color: #aacaf3;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: column nowrap;\n  font-family: Arial, Helvetica, sans-serif;\n}\n\nh1 {\n  font-size: 3rem;\n  font-weight: 900;\n  text-transform: capitalize;\n}\n\n.title-bar {\n  padding: 1rem;\n  color: #2c3e50;\n  position: absolute;\n  top: 0;\n  left: 0;\n  text-align: center;\n  width: 100%;\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n}\n\n.settings {\n  color: azure;\n  transition: 2s ease-in-out;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n  justify-content: space-between;\n  min-height: 20vh;\n  width: 100%;\n  position: absolute;\n  bottom: 0;\n  left: 0;\n  background: rgba(84, 83, 83, 0.7);\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n}\n.settings .slider-element-container {\n  margin: 1rem;\n  padding: 1rem;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: column nowrap;\n}\n.settings .slider-element-container h5 {\n  margin-bottom: 1rem;\n}\n.settings .checkbox-element-container {\n  width: 30%;\n  display: flex;\n  align-items: flex-start;\n  justify-content: center;\n  flex-flow: column nowrap;\n  justify-self: flex-end;\n  padding: 0 2rem;\n  border-left: 3px solid black;\n  height: 20vh;\n  background: #2e2d2d;\n  font-size: 1.6rem;\n  color: azure;\n}\n.settings .checkbox-element-container div {\n  margin: 1rem 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n}\n.settings .checkbox-element-container div input {\n  order: 1;\n  height: 1.6rem;\n  width: 1.6rem;\n}\n.settings .checkbox-element-container div h5 {\n  margin-left: 1rem;\n  order: 2;\n}\n\n#sidebar {\n  position: absolute;\n  right: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: column nowrap;\n}\n#sidebar #toggle, #sidebar #toggleHP, #sidebar #home {\n  width: 100px;\n  height: 100px;\n  background-color: #545353;\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n  color: azure;\n  font-size: 2rem;\n  transition: 0.5s;\n}\n#sidebar #toggle:hover, #sidebar #toggleHP:hover, #sidebar #home:hover {\n  color: #8affff;\n  background-color: #212020;\n  font-size: 2.1rem;\n  cursor: pointer;\n}\n#sidebar #home a {\n  text-decoration: none;\n  color: inherit;\n}\n.d-n {\n  display: none;\n}\n\ninput[type=range] {\n  -webkit-appearance: none;\n  position: relative;\n}\n\ninput[type=range]::-webkit-slider-runnable-track {\n  width: 300px;\n  height: 2px;\n  border: none;\n  border-radius: 3px;\n}\n\ninput[type=range]::-webkit-slider-thumb {\n  -webkit-appearance: none;\n  border: none;\n  height: 12px;\n  width: 12px;\n  border-radius: 510%;\n  background: #141414;\n  border: 2px solid #515151;\n  margin-top: -5px;\n  cursor: pointer;\n}\n\n.focused::-webkit-slider-thumb {\n  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.15);\n}\n\n.clicked::-webkit-slider-thumb {\n  -webkit-transform: scale(1.5);\n}\n\n.disabled::-webkit-slider-thumb {\n  -webkit-transform: scale(0.9);\n  box-shadow: 0 0 0 3px #141414;\n  background: #515151 !important;\n  border-color: #515151 !important;\n}\n\ninput[type=range]:focus {\n  outline: none;\n}\n\n.rangeM input[type=range].disabled::-webkit-slider-runnable-track {\n  background: #515151 !important;\n}\n\n.rangeM input[type=range]::-webkit-slider-thumb {\n  background: #3f51b5;\n  border-color: #3f51b5;\n}\n\n.range:hover input[type=range]:before {\n  color: white;\n  content: \"50\";\n  position: absolute;\n  font-family: Roboto Slab;\n  top: -49px;\n  background: #3f51b5;\n  padding: 8px 0 3px;\n  font-size: 14px;\n  width: 30px;\n  text-align: center;\n  border-radius: 100% 100% 0 0;\n}\n\n.range:hover input[type=range]:after {\n  content: \"\";\n  position: absolute;\n  top: -19px;\n  left: 50px;\n  border-left: 15px solid transparent;\n  border-right: 15px solid transparent;\n  border-top: 8px solid #3f51b5;\n  font-family: Roboto Slab;\n}\n\n.personStats {\n  position: absolute;\n  top: 0;\n  left: 0;\n  height: 20vh;\n  width: 30%;\n  display: flex;\n  align-items: center;\n  justify-content: flex-start;\n  flex-flow: row nowrap;\n  background-color: #545353;\n  border-radius: 0 0 40px 0;\n  overflow: hidden;\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n}\n.personStats img {\n  width: 40%;\n  overflow: hidden;\n  border-radius: 40px;\n  border: 3px azure solid;\n}\n.personStats div {\n  width: 60%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: flex-start;\n  flex-flow: row wrap;\n}\n.personStats div .hp {\n  height: 20%;\n  width: 100%;\n  background-color: #f68989;\n}\n.personStats div .hp .hp-progress {\n  background-color: #d72121;\n  width: 50%;\n  height: 100%;\n  z-index: 10;\n  border-radius: 0 40px 40px 0;\n}\n.personStats div .mp {\n  height: 20%;\n  width: 100%;\n  background-color: #7f86d9;\n}\n.personStats div .mp .mp-progress {\n  background-color: #2133d7;\n  width: 50%;\n  height: 100%;\n  z-index: 10;\n  border-radius: 0 40px 40px 0;\n}\n.personStats div .exp {\n  height: 20%;\n  width: 100%;\n  background-color: #5e3c79;\n}\n.personStats div .exp .exp-progress {\n  background-color: #560d83;\n  width: 50%;\n  height: 100%;\n  z-index: 10;\n  border-radius: 0 40px 40px 0;\n}\n\n/*# sourceMappingURL=style.css.map */\n", "",{"version":3,"sources":["webpack://./src/style.scss","webpack://./src/style.css"],"names":[],"mappings":"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","sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -50543,6 +50543,156 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./src/components/Floor.js":
+/*!*********************************!*\
+  !*** ./src/components/Floor.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Floor)
+/* harmony export */ });
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var _assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./assets/materials/cobblestone.jpg */ "./src/components/assets/materials/cobblestone.jpg");
+
+
+
+class Floor {
+    constructor(scene) {
+        console.log("FLOOR")
+        this.scene = scene;
+
+        this.geometry = new three__WEBPACK_IMPORTED_MODULE_1__.BoxGeometry(50,50,50);
+        this.material = new three__WEBPACK_IMPORTED_MODULE_1__.MeshNormalMaterial({
+            side: three__WEBPACK_IMPORTED_MODULE_1__.DoubleSide,
+            map: new three__WEBPACK_IMPORTED_MODULE_1__.TextureLoader().load(_assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__),
+            transparent: false,
+            opacity: 0.8,
+        });
+        this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
+        this.mesh.position.set(1,0-this.geometry.y/2+10,1);
+
+        this.scene.add(this.mesh)
+    }
+    update(){
+         //    NONE FOR NOW
+    }
+}
+
+
+/***/ }),
+
+/***/ "./src/components/GUI.js":
+/*!*******************************!*\
+  !*** ./src/components/GUI.js ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ GUI)
+/* harmony export */ });
+class GUI {
+    constructor() {
+
+        let personStats = document.createElement('div');
+        personStats.classList.add("personStats");
+        let avatar = document.createElement('img');
+        avatar.src = "https://i.pinimg.com/originals/a3/6e/fc/a36efc0218e050f8192c5584eb4f363b.jpg";
+        let cont = document.createElement('div');
+        let hp = document.createElement('div'); hp.classList.add("hp"); hp.innerHTML = `<div class="hp-Progress"></div>`
+        let mp = document.createElement('div'); mp.classList.add("mp"); mp.innerHTML = `<div class="mp-Progress"></div>`
+        let exp = document.createElement('div');exp.classList.add("exp"); exp.innerHTML = `<div class="exp-Progress"></div>`
+
+
+        personStats.append(avatar);
+        cont.append(hp);
+        cont.append(mp);
+        cont.append(exp);
+        personStats.append(cont);
+        document.body.append(personStats);
+
+
+        let sidebar = document.createElement('div');
+        sidebar.id="sidebar";
+        let toggle = document.createElement('div');
+        toggle.id ="toggle";
+        toggle.innerHTML = "<i class=\"fas fa-cogs\"></i>"
+        toggle.addEventListener('click', ()=>{
+            document.querySelector('.settings').classList.toggle('d-n');
+        })
+        sidebar.append(toggle);
+
+        let home = document.createElement('div');
+        home.id ="home";
+        home.innerHTML = "<a href='/'><i class=\"fas fa-home\"></i></a> ";
+        sidebar.append(home);
+
+
+        let toggleHP = document.createElement('div');
+        toggleHP.id ="toggleHP";
+        toggleHP.innerHTML = "<i class=\"fas fa-user-tie\"></i>"
+        toggleHP.addEventListener('click', ()=>{
+            document.querySelector('.personStats').classList.toggle('d-n');
+            document.querySelector('.personStats').style.display  = (document.querySelector('.personStats').style.display == 'none')? '': 'none';
+        })
+        sidebar.append(toggleHP);
+
+        document.body.append(sidebar);
+
+        let settings = document.createElement('div');
+        settings.classList.add('settings')
+
+        let sliders = ['Camera height', 'Camera X angle','Distance form person', 'Camera view angle Y', 'Camera  fov', 'Light intensity'];
+        let chbxs = ['Shadows', 'View From Top', 'Camera behind player'];
+        sliders.forEach( silderTitle => {
+            let div = document.createElement('div');
+            div.classList.add('slider-element-container');
+
+            let desc = document.createElement('h5');
+            desc.innerText = `${silderTitle}`
+            let input = document.createElement('input');
+            input.id = `${silderTitle.replaceAll(' ','-').toLowerCase()}`;
+            input.type = 'range';
+            input.classList.add("focused")
+            input.classList.add("range")
+            input.classList.add("rangeM")
+            input.min = 0;
+            input.max = 1;
+            input.value = 0.5;
+            input.step = 0.1;
+
+            div.append(desc);
+            div.append(input);
+
+            settings.append(div)
+        })
+        let checkboxes = document.createElement('div');
+        checkboxes.classList.add('checkbox-element-container');
+
+        chbxs.forEach( chbx => {
+            let row = document.createElement("div");
+            let desc = document.createElement('h5');
+            desc.innerText = `${chbx}`
+            let input = document.createElement('input');
+            input.id = `${chbx.replaceAll(' ','-').toLowerCase()}`;
+            input.type = 'checkbox';
+
+            row.append(desc)
+            row.append(input)
+            checkboxes.append(row)
+        })
+        settings.append(checkboxes)
+
+        document.body.append(settings)
+    }
+
+
+}
+
+/***/ }),
+
 /***/ "./src/components/Keyboard.js":
 /*!************************************!*\
   !*** ./src/components/Keyboard.js ***!
@@ -50627,14 +50777,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Main)
 /* harmony export */ });
-/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
 /* harmony import */ var _Model__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Model */ "./src/components/Model.js");
 /* harmony import */ var _Keyboard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Keyboard */ "./src/components/Keyboard.js");
 /* harmony import */ var _Animation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Animation */ "./src/components/Animation.js");
 /* harmony import */ var _Config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Config */ "./src/components/Config.js");
-/* harmony import */ var three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! three/examples/jsm/libs/stats.module.js */ "./node_modules/three/examples/jsm/libs/stats.module.js");
+/* harmony import */ var three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! three/examples/jsm/libs/stats.module.js */ "./node_modules/three/examples/jsm/libs/stats.module.js");
 /* harmony import */ var _Renderer__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Renderer */ "./src/components/Renderer.js");
 /* harmony import */ var _Camera__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Camera */ "./src/components/Camera.js");
+/* harmony import */ var _GUI__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./GUI */ "./src/components/GUI.js");
+/* harmony import */ var _Net__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Net */ "./src/components/Net.js");
+/* harmony import */ var _Floor__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Floor */ "./src/components/Floor.js");
+
+
+
 
 
 
@@ -50652,7 +50808,7 @@ class Main {
         this.animation = null
 
         this.container = container;
-        this.scene = new three__WEBPACK_IMPORTED_MODULE_6__.Scene();
+        this.scene = new three__WEBPACK_IMPORTED_MODULE_9__.Scene();
         this.renderer = new _Renderer__WEBPACK_IMPORTED_MODULE_4__.default(this.scene, container);
         this.camera = new _Camera__WEBPACK_IMPORTED_MODULE_5__.default(this.renderer.threeRenderer);
 
@@ -50663,23 +50819,23 @@ class Main {
         // this.scene.add( light );
         // grid - testowa siatka na podłoże modelu
 
-        const gridHelper = new three__WEBPACK_IMPORTED_MODULE_6__.GridHelper(1000, 10);
+        const gridHelper = new three__WEBPACK_IMPORTED_MODULE_9__.GridHelper(1000, 10);
         this.scene.add(gridHelper);
 
         //stats - statystyki wydajności
 
-        this.stats = new three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_7__.default();
+        this.stats = new three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_10__.default();
         this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb
 
         document.body.appendChild(this.stats.dom);
 
         // zegar - vide lekcja 4
 
-        this.clock = new three__WEBPACK_IMPORTED_MODULE_6__.Clock()
+        this.clock = new three__WEBPACK_IMPORTED_MODULE_9__.Clock()
 
         // manager loadingu, pozwala monitorować progress oraz fakt zakończenia ładowania
 
-        this.manager = new three__WEBPACK_IMPORTED_MODULE_6__.LoadingManager();
+        this.manager = new three__WEBPACK_IMPORTED_MODULE_9__.LoadingManager();
 
         // model
 
@@ -50714,8 +50870,14 @@ class Main {
 
         };
 
-
+        this.floor = new _Floor__WEBPACK_IMPORTED_MODULE_8__.default(this.scene);
         this.render();
+
+        this.GUI = new _GUI__WEBPACK_IMPORTED_MODULE_6__.default();
+        this.net = new _Net__WEBPACK_IMPORTED_MODULE_7__.default();
+        this.net.getMap()
+
+
     }
 
     render() {
@@ -50750,7 +50912,7 @@ class Main {
             if (_Config__WEBPACK_IMPORTED_MODULE_3__.default.moveForward) {
                 this.model.mesh.translateX(3)
             }
-            const camVect = new three__WEBPACK_IMPORTED_MODULE_6__.Vector3(-100, 50, 0)
+            const camVect = new three__WEBPACK_IMPORTED_MODULE_9__.Vector3(-100, 50, 0)
 
             const camPos = camVect.applyMatrix4(this.model.mesh.matrixWorld);
             this.camera.threeCamera.position.x = camPos.x
@@ -50764,6 +50926,7 @@ class Main {
 
         requestAnimationFrame(this.render.bind(this));
     }
+
 }
 
 
@@ -50832,6 +50995,73 @@ class Model {
 
 /***/ }),
 
+/***/ "./src/components/Net.js":
+/*!*******************************!*\
+  !*** ./src/components/Net.js ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Net)
+/* harmony export */ });
+class Net {
+
+    constructor() {
+        this.baseUrl = 'http://localhost:5000';
+        this.loadUrl = this.baseUrl + '/load';
+    }
+
+    // async getMap(){
+    //     // let res = await  fetch(this.loadUrl,{
+    //     //     method: 'POST',
+    //     //     mode: 'no-cors',
+    //     //     headers: {
+    //     //         'Content-Type': 'application/json',
+    //     //         'Accept': 'application/json',
+    //     //         'Access-Control-Allow-Origin': '*'
+    //     //     },
+    //     // })
+    //     //
+    //     // let stringified = JSON.stringify(res);
+    //     // let parsedObj = JSON.parse(stringified);
+    //     // console.log(parsedObj)
+    //     // return parsedObj
+    //
+    //     let _data = {
+    //     }
+    //
+    //     return await fetch(this.loadUrl, {
+    //         method: "POST",
+    //         body: JSON.stringify(_data),
+    //         mode: 'no-cors',
+    //         headers: {
+    //             "Content-type": "application/json; charset=UTF-8",
+    //             'Access-Control-Allow-Origin': '*'
+    //         }
+    //     });
+    //
+    //
+    // }
+
+    async getMap()  {
+        const response = await fetch("http://localhost:5000/load", {
+            method: "POST",
+            body: JSON.stringify({}),
+            mode: "no-cors",
+            headers: {
+              "Content-type": "application/json; charset=UTF-8",
+              "Access-Control-Allow-Origin": "*"
+            }
+        });
+        let json = await response.json();
+        console.log(json)
+    };
+}
+
+
+/***/ }),
+
 /***/ "./src/components/Renderer.js":
 /*!************************************!*\
   !*** ./src/components/Renderer.js ***!
@@ -50881,13 +51111,13 @@ module.exports = __webpack_require__.p + "02dc25d734c52be29441.png";
 
 /***/ }),
 
-/***/ "./src/pic.png":
-/*!*********************!*\
-  !*** ./src/pic.png ***!
-  \*********************/
+/***/ "./src/components/assets/materials/cobblestone.jpg":
+/*!*********************************************************!*\
+  !*** ./src/components/assets/materials/cobblestone.jpg ***!
+  \*********************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-module.exports = __webpack_require__.p + "7fec5c1c945fbc9e6eb9.png";
+module.exports = __webpack_require__.p + "ffee80ef7d056152eb93.jpg";
 
 /***/ })
 
@@ -50999,21 +51229,14 @@ var __webpack_exports__ = {};
   \**********************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _style_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./style.css */ "./src/style.css");
-/* harmony import */ var _pic_png__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./pic.png */ "./src/pic.png");
-/* harmony import */ var _components_Main__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/Main */ "./src/components/Main.js");
+/* harmony import */ var _components_Main__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/Main */ "./src/components/Main.js");
 console.log("webpack works!")
-
-// import data1 from "./data1.js"
-// import data2 from "./data2.js"
-//
-// import {aaa, bbb} from "./data1"
-// import { ccc } from "./data2"
 
 // Ładowanie styli
 ;
 
 // Ładownie plików
-
+// import plik from './pic.png';
 
 
 
@@ -51021,19 +51244,12 @@ function init() {
     //div
     const container = document.getElementById('root');
     //main class object
-    new _components_Main__WEBPACK_IMPORTED_MODULE_2__.default(container);
+    const main = new _components_Main__WEBPACK_IMPORTED_MODULE_1__.default(container);
+
 }
 
 init();
 
-//
-// document.getElementById("img1").src = plik
-//
-// const obj = {
-//     a:data1,
-//     b:data2
-// }
-// console.log(obj, aaa, bbb, ccc)
 
 
 })();

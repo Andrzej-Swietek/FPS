@@ -1,6 +1,24 @@
 export default class GUI {
     constructor() {
 
+        let personStats = document.createElement('div');
+        personStats.classList.add("personStats");
+        let avatar = document.createElement('img');
+        avatar.src = "https://i.pinimg.com/originals/a3/6e/fc/a36efc0218e050f8192c5584eb4f363b.jpg";
+        let cont = document.createElement('div');
+        let hp = document.createElement('div'); hp.classList.add("hp"); hp.innerHTML = `<div class="hp-Progress"></div>`
+        let mp = document.createElement('div'); mp.classList.add("mp"); mp.innerHTML = `<div class="mp-Progress"></div>`
+        let exp = document.createElement('div');exp.classList.add("exp"); exp.innerHTML = `<div class="exp-Progress"></div>`
+
+
+        personStats.append(avatar);
+        cont.append(hp);
+        cont.append(mp);
+        cont.append(exp);
+        personStats.append(cont);
+        document.body.append(personStats);
+
+
         let sidebar = document.createElement('div');
         sidebar.id="sidebar";
         let toggle = document.createElement('div');
@@ -16,6 +34,15 @@ export default class GUI {
         home.innerHTML = "<a href='/'><i class=\"fas fa-home\"></i></a> ";
         sidebar.append(home);
 
+
+        let toggleHP = document.createElement('div');
+        toggleHP.id ="toggleHP";
+        toggleHP.innerHTML = "<i class=\"fas fa-user-tie\"></i>"
+        toggleHP.addEventListener('click', ()=>{
+            document.querySelector('.personStats').classList.toggle('d-n');
+            document.querySelector('.personStats').style.display  = (document.querySelector('.personStats').style.display == 'none')? '': 'none';
+        })
+        sidebar.append(toggleHP);
 
         document.body.append(sidebar);
 
@@ -33,6 +60,9 @@ export default class GUI {
             let input = document.createElement('input');
             input.id = `${silderTitle.replaceAll(' ','-').toLowerCase()}`;
             input.type = 'range';
+            input.classList.add("focused")
+            input.classList.add("range")
+            input.classList.add("rangeM")
             input.min = 0;
             input.max = 1;
             input.value = 0.5;
