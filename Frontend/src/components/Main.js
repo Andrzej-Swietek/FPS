@@ -2,7 +2,8 @@ import {
     LoadingManager,
     Clock,
     Vector3,
-    GridHelper
+    GridHelper,
+    PCFSoftShadowMap
 } from 'three';
 import Model from "./Model"
 import Keyboard from "./Keyboard"
@@ -14,7 +15,12 @@ import Renderer from './Renderer';
 import Camera from './Camera';
 import GUI from './GUI';
 import Net from "./Net";
+
+// ======== GAME PIECES ========
 import Floor from "./Floor";
+import Wall from "./Wall";
+import Torch from "./Torch";
+import Treasure from "./Treasure";
 
 export default class Main {
     constructor(container) {
@@ -91,13 +97,31 @@ export default class Main {
         };
 
 
+        this.level = [{"id":0,"x":1,"y":0,"z":1,"type":"wall"},{"id":1,"x":8,"y":0,"z":1,"type":"wall"},{"id":2,"x":8,"y":0,"z":8,"type":"wall"},{"id":3,"x":1,"y":0,"z":8,"type":"wall"},{"id":4,"x":1,"y":0,"z":7,"type":"wall"},{"id":5,"x":1,"y":0,"z":6,"type":"wall"},{"id":6,"x":1,"y":0,"z":2,"type":"wall"},{"id":7,"x":1,"y":0,"z":3,"type":"wall"},{"id":8,"x":2,"y":0,"z":8,"type":"wall"},{"id":9,"x":3,"y":0,"z":8,"type":"wall"},{"id":10,"x":6,"y":0,"z":8,"type":"wall"},{"id":11,"x":7,"y":0,"z":8,"type":"wall"},{"id":12,"x":8,"y":0,"z":7,"type":"wall"},{"id":13,"x":8,"y":0,"z":6,"type":"wall"},{"id":14,"x":8,"y":0,"z":2,"type":"wall"},{"id":15,"x":8,"y":0,"z":3,"type":"wall"},{"id":16,"x":7,"y":0,"z":1,"type":"wall"},{"id":17,"x":6,"y":0,"z":1,"type":"wall"},{"id":18,"x":2,"y":0,"z":1,"type":"wall"},{"id":19,"x":3,"y":0,"z":1,"type":"wall"},{"id":20,"x":2,"y":0,"z":2,"type":"light"},{"id":21,"x":2,"y":0,"z":7,"type":"light"},{"id":22,"x":7,"y":0,"z":7,"type":"light"},{"id":23,"x":7,"y":0,"z":2,"type":"light"},{"id":24,"x":4,"y":0,"z":4,"type":"treasure"},{"id":25,"x":5,"y":0,"z":4,"type":"treasure"},{"id":26,"x":5,"y":0,"z":5,"type":"treasure"},{"id":27,"x":4,"y":0,"z":5,"type":"treasure"},{"id":28,"x":0,"y":0,"z":0,"type":"light"},{"id":29,"x":9,"y":0,"z":0,"type":"light"},{"id":30,"x":9,"y":0,"z":9,"type":"light"},{"id":31,"x":0,"y":0,"z":9,"type":"light"}]
+
+
+        this.level.forEach( field => {
+            if (field.type === 'wall'){
+                new Wall(this.scene, field.x,0,field.z);
+                new Wall(this.scene, field.x,1,field.z);
+            } else if (field.type === 'treasure'){
+                new Treasure(this.scene, field.x,0,field.z)
+            }
+        })
 
         this.floor = new Floor(this.scene);
+        this.test_wall = new Wall(this.scene, 1,0,1);
+        this.test_wall2 = new Wall(this.scene, 1,1,1);
+
+        this.test_torch = new Torch(this.scene)
+        this.scene.add(this.test_torch.getLight())
+        this.test_torch.positionLight(2,0,2);
+        // this.test_torch.setShadow(true);
         this.render();
 
         this.GUI = new GUI();
         this.net = new Net();
-        this.net.getMap()
+        // this.net.getMap()
 
 
     }

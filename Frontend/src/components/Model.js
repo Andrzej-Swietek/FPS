@@ -12,8 +12,8 @@ export default class Model {
     }
 
     load(path) {
-
-        const light = new PointLight( 0xffffff, 5, 10000 );
+        //10000
+        const light = new PointLight( 0xffffff, 5, 1000 );
         light.position.set( 50, 50, 50 );
         this.scene.add( light );
         // Manager is passed in to loader to determine when loading done in main
