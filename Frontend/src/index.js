@@ -13,6 +13,7 @@ function init() {
     const container = document.getElementById('root');
     //main class object
     const main = new Main(container);
+    main.generateMap()
 
 }
 

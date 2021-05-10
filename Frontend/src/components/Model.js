@@ -13,9 +13,9 @@ export default class Model {
 
     load(path) {
         //10000
-        const light = new PointLight( 0xffffff, 5, 1000 );
-        light.position.set( 50, 50, 50 );
-        this.scene.add( light );
+        // const light = new PointLight( 0xffffff, 5, 10000 );
+        // light.position.set( 50, 50, 50 );
+        // this.scene.add( light );
         // Manager is passed in to loader to determine when loading done in main
         // Load model with FBXLoader
 

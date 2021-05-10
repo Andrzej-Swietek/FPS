@@ -50537,8 +50537,77 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
     rotateLeft: false,
     rotateRight: false,
-    moveForward: false
+    moveForward: false,
+    moveBackward: false
 });
+
+
+/***/ }),
+
+/***/ "./src/components/Enemy.js":
+/*!*********************************!*\
+  !*** ./src/components/Enemy.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Enemy)
+/* harmony export */ });
+/* harmony import */ var three_examples_jsm_loaders_MD2Loader_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! three/examples/jsm/loaders/MD2Loader.js */ "./node_modules/three/examples/jsm/loaders/MD2Loader.js");
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var _assets_ogre_Ogre_png__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./assets/ogre/Ogre.png */ "./src/components/assets/ogre/Ogre.png");
+
+
+
+
+
+
+
+class Enemy {
+    constructor(scene, manager) {
+        this.scene = scene;
+        this.mesh = null;
+        this.manager = manager;
+        this.geometry = null
+    }
+
+    load(path) {
+        //10000
+        // const light = new PointLight( 0xffffff, 5, 1000 );
+        // light.position.set( 50, 50, 50 );
+        // this.scene.add( light );
+        // Manager is passed in to loader to determine when loading done in main
+        // Load model with FBXLoader
+
+        new three_examples_jsm_loaders_MD2Loader_js__WEBPACK_IMPORTED_MODULE_1__.MD2Loader(this.manager).load(
+            path,
+            geometry => {
+
+                this.geometry = geometry;
+
+                this.mesh = new three__WEBPACK_IMPORTED_MODULE_2__.Mesh(geometry, new three__WEBPACK_IMPORTED_MODULE_2__.MeshPhongMaterial({
+                    map: new three__WEBPACK_IMPORTED_MODULE_2__.TextureLoader().load(_assets_ogre_Ogre_png__WEBPACK_IMPORTED_MODULE_0__), // dowolny plik png, jpg
+                    morphTargets: true // animowanie materiału modelu
+                }))
+                this.mesh.position.set(0,0,0);
+                this.scene.add(this.mesh);
+                console.log(this.geometry.animations) // tu powinny być widoczne animacje
+
+            },
+
+        );
+
+    }
+
+    moveTo() {
+
+    }
+
+    kill() {
+        this.scene.remove(this.mesh); // ew funkcja do usunięcia modelu ze sceny
+    }
+}
 
 
 /***/ }),
@@ -50560,20 +50629,23 @@ __webpack_require__.r(__webpack_exports__);
 
 class Floor {
     constructor(scene) {
-        console.log("FLOOR")
+        console.log("FLOOR",_assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__)
         this.scene = scene;
-
-        this.geometry = new three__WEBPACK_IMPORTED_MODULE_1__.BoxGeometry(50,50,50);
-        this.material = new three__WEBPACK_IMPORTED_MODULE_1__.MeshNormalMaterial({
+        this.geometry = new three__WEBPACK_IMPORTED_MODULE_1__.BoxGeometry(100,1,100);
+        this.material = new three__WEBPACK_IMPORTED_MODULE_1__.MeshBasicMaterial({
             side: three__WEBPACK_IMPORTED_MODULE_1__.DoubleSide,
             map: new three__WEBPACK_IMPORTED_MODULE_1__.TextureLoader().load(_assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__),
             transparent: false,
             opacity: 0.8,
         });
-        this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
-        this.mesh.position.set(1,0-this.geometry.y/2+10,1);
+        for (let x = 0; x < 10; x++) {
+            for (let z = 0; z < 10; z++) {
+                this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
+                this.mesh.position.set(-500+50+x*50*2,-25,-500+50+z*50*2);
+                this.scene.add(this.mesh)
+            }
+        }
 
-        this.scene.add(this.mesh)
     }
     update(){
          //    NONE FOR NOW
@@ -50713,6 +50785,10 @@ const KEYS = {
     "up": 38,
     "right": 39,
     "down": 40,
+    "w": 87,
+    "s": 83,
+    "a": 65,
+    "d": 68
 };
 
 class Keyboard {
@@ -50732,13 +50808,20 @@ class Keyboard {
     onKeyUp(event) {
         switch (event.keyCode) {
             case KEYS.up:
+            case KEYS.w:
                 _Config__WEBPACK_IMPORTED_MODULE_1__.default.moveForward = false;
                 break;
             case KEYS.left:
+            case KEYS.a:
                 _Config__WEBPACK_IMPORTED_MODULE_1__.default.rotateLeft = false;
                 break;
             case KEYS.right:
+            case KEYS.d:
                 _Config__WEBPACK_IMPORTED_MODULE_1__.default.rotateRight = false;
+                break;
+            case KEYS.down:
+            case KEYS.s:
+                _Config__WEBPACK_IMPORTED_MODULE_1__.default.moveBackward = false;
                 break;
 
 
@@ -50749,13 +50832,20 @@ class Keyboard {
     onKeyDown(event) {
         switch (event.keyCode) {
             case KEYS.up:
+            case KEYS.w:
                 _Config__WEBPACK_IMPORTED_MODULE_1__.default.moveForward = true;
                 break;
             case KEYS.left:
+            case KEYS.a:
                 _Config__WEBPACK_IMPORTED_MODULE_1__.default.rotateLeft = true;
                 break;
             case KEYS.right:
+            case KEYS.d:
                 _Config__WEBPACK_IMPORTED_MODULE_1__.default.rotateRight = true;
+                break;
+            case KEYS.down:
+            case KEYS.s:
+                _Config__WEBPACK_IMPORTED_MODULE_1__.default.moveBackward = true;
                 break;
         }
 
@@ -50777,23 +50867,35 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Main)
 /* harmony export */ });
-/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
 /* harmony import */ var _Model__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Model */ "./src/components/Model.js");
 /* harmony import */ var _Keyboard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Keyboard */ "./src/components/Keyboard.js");
 /* harmony import */ var _Animation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Animation */ "./src/components/Animation.js");
 /* harmony import */ var _Config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Config */ "./src/components/Config.js");
-/* harmony import */ var three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! three/examples/jsm/libs/stats.module.js */ "./node_modules/three/examples/jsm/libs/stats.module.js");
+/* harmony import */ var three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! three/examples/jsm/libs/stats.module.js */ "./node_modules/three/examples/jsm/libs/stats.module.js");
 /* harmony import */ var _Renderer__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Renderer */ "./src/components/Renderer.js");
 /* harmony import */ var _Camera__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Camera */ "./src/components/Camera.js");
 /* harmony import */ var _GUI__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./GUI */ "./src/components/GUI.js");
 /* harmony import */ var _Net__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Net */ "./src/components/Net.js");
 /* harmony import */ var _Floor__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Floor */ "./src/components/Floor.js");
+/* harmony import */ var _Wall__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./Wall */ "./src/components/Wall.js");
+/* harmony import */ var _Torch__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./Torch */ "./src/components/Torch.js");
+/* harmony import */ var _Treasure__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./Treasure */ "./src/components/Treasure.js");
+/* harmony import */ var _Roof__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./Roof */ "./src/components/Roof.js");
+/* harmony import */ var _Enemy__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./Enemy */ "./src/components/Enemy.js");
 
 
 
 
 
 
+
+
+
+
+
+
+// ======== GAME PIECES ========
 
 
 
@@ -50808,40 +50910,42 @@ class Main {
         this.animation = null
 
         this.container = container;
-        this.scene = new three__WEBPACK_IMPORTED_MODULE_9__.Scene();
+        this.scene = new three__WEBPACK_IMPORTED_MODULE_14__.Scene();
         this.renderer = new _Renderer__WEBPACK_IMPORTED_MODULE_4__.default(this.scene, container);
         this.camera = new _Camera__WEBPACK_IMPORTED_MODULE_5__.default(this.renderer.threeRenderer);
 
-        // light
+        // ==================== LIGHT ====================
 
         // const light = new THREE.PointLight( 0xff0000, 1, 100 );
         // this.light.position.set( 50, 50, 50 );
         // this.scene.add( light );
-        // grid - testowa siatka na podłoże modelu
 
-        const gridHelper = new three__WEBPACK_IMPORTED_MODULE_9__.GridHelper(1000, 10);
+        // ==================== GRID ====================
+        // testowa siatka na podłoże modelu
+
+        const gridHelper = new three__WEBPACK_IMPORTED_MODULE_14__.GridHelper(1000, 10);
         this.scene.add(gridHelper);
 
-        //stats - statystyki wydajności
+        // ==================== STATS ====================
+        // statystyki wydajności
 
-        this.stats = new three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_10__.default();
+        this.stats = new three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_15__.default();
         this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb
 
         document.body.appendChild(this.stats.dom);
 
-        // zegar - vide lekcja 4
+        // ==================== ZEGAR ====================
 
-        this.clock = new three__WEBPACK_IMPORTED_MODULE_9__.Clock()
+        this.clock = new three__WEBPACK_IMPORTED_MODULE_14__.Clock()
 
         // manager loadingu, pozwala monitorować progress oraz fakt zakończenia ładowania
 
-        this.manager = new three__WEBPACK_IMPORTED_MODULE_9__.LoadingManager();
+        this.manager = new three__WEBPACK_IMPORTED_MODULE_14__.LoadingManager();
 
-        // model
+        // ==================== MODEL ====================
 
         this.model = new _Model__WEBPACK_IMPORTED_MODULE_0__.default(this.scene, this.manager);
         this.model.load("./dist/assets/boba.md2");
-
         // moniytor progressu ładowania
 
         this.manager.onProgress = (item, loaded, total) => {
@@ -50863,6 +50967,9 @@ class Main {
             // przykładowa animacja z modelu Mario
 
             this.animation.playAnim("crwalk")
+            // this.animation.playAnim("crattak")
+            // this.animation.playAnim("jump")
+            // this.animation.playAnim("jump")
 
             //kawiatura
 
@@ -50870,19 +50977,59 @@ class Main {
 
         };
 
+        // ==================== EXAMPLE LEVEL ====================
+        this.level = [{"id":0,"x":1,"y":0,"z":1,"type":"wall"},{"id":1,"x":8,"y":0,"z":1,"type":"wall"},{"id":2,"x":8,"y":0,"z":8,"type":"wall"},{"id":3,"x":1,"y":0,"z":8,"type":"wall"},{"id":4,"x":1,"y":0,"z":7,"type":"wall"},{"id":5,"x":1,"y":0,"z":6,"type":"wall"},{"id":6,"x":1,"y":0,"z":2,"type":"wall"},{"id":7,"x":1,"y":0,"z":3,"type":"wall"},{"id":8,"x":2,"y":0,"z":8,"type":"wall"},{"id":9,"x":3,"y":0,"z":8,"type":"wall"},{"id":10,"x":6,"y":0,"z":8,"type":"wall"},{"id":11,"x":7,"y":0,"z":8,"type":"wall"},{"id":12,"x":8,"y":0,"z":7,"type":"wall"},{"id":13,"x":8,"y":0,"z":6,"type":"wall"},{"id":14,"x":8,"y":0,"z":2,"type":"wall"},{"id":15,"x":8,"y":0,"z":3,"type":"wall"},{"id":16,"x":7,"y":0,"z":1,"type":"wall"},{"id":17,"x":6,"y":0,"z":1,"type":"wall"},{"id":18,"x":2,"y":0,"z":1,"type":"wall"},{"id":19,"x":3,"y":0,"z":1,"type":"wall"},{"id":20,"x":2,"y":0,"z":2,"type":"light"},{"id":21,"x":2,"y":0,"z":7,"type":"light"},{"id":22,"x":7,"y":0,"z":7,"type":"light"},{"id":23,"x":7,"y":0,"z":2,"type":"light"},{"id":24,"x":4,"y":0,"z":4,"type":"treasure"},{"id":25,"x":5,"y":0,"z":4,"type":"treasure"},{"id":26,"x":5,"y":0,"z":5,"type":"treasure"},{"id":27,"x":4,"y":0,"z":5,"type":"treasure"},{"id":28,"x":0,"y":0,"z":0,"type":"light"},{"id":29,"x":9,"y":0,"z":0,"type":"light"},{"id":30,"x":9,"y":0,"z":9,"type":"light"},{"id":31,"x":0,"y":0,"z":9,"type":"light"}]
+
+
         this.floor = new _Floor__WEBPACK_IMPORTED_MODULE_8__.default(this.scene);
+        this.roof = new _Roof__WEBPACK_IMPORTED_MODULE_12__.default(this.scene);
+
+
+        // this.test_wall = new Wall(this.scene, 1,0,1);
+        // this.test_wall2 = new Wall(this.scene, 1,1,1);
+
+        // this.test_torch = new Torch(this.scene)
+        // this.scene.add(this.test_torch.getLight())
+        // this.test_torch.positionLight(2,0,2);
+        // this.test_torch.setShadow(true);
+
+        // this.test_torch2 = new Torch(this.scene)
+        // this.scene.add(this.test_torch2.getLight())
+        // this.test_torch2.positionLight(6,1,6);
+
         this.render();
 
         this.GUI = new _GUI__WEBPACK_IMPORTED_MODULE_6__.default();
+
         this.net = new _Net__WEBPACK_IMPORTED_MODULE_7__.default();
-        this.net.getMap()
+    }
 
 
+    async generateMap() {
+       this.level = await this.net.getMap()
+        console.log("LV",this.level)
+
+        this.level.forEach( field => {
+            if (field.type === 'wall'){
+                new _Wall__WEBPACK_IMPORTED_MODULE_9__.default(this.scene, field.x,0,field.z);
+                new _Wall__WEBPACK_IMPORTED_MODULE_9__.default(this.scene, field.x,1,field.z);
+            } else if (field.type === 'treasure'){
+                new _Treasure__WEBPACK_IMPORTED_MODULE_11__.default(this.scene, field.x,0,field.z)
+            }else if (field.type === 'light'){
+                let t =  new _Torch__WEBPACK_IMPORTED_MODULE_10__.default(this.scene);
+                this.scene.add(t.getLight())
+                t.positionLight(field.x,2,field.z);
+            }else if (field.type === 'enemy'){
+                let ogre = new _Model__WEBPACK_IMPORTED_MODULE_0__.default(this.scene, this.manager);
+                ogre.load("./dist/assets/ogre.md2");
+
+                let ogreLoadManager = new three__WEBPACK_IMPORTED_MODULE_14__.LoadingManager();
+
+            }
+        })
     }
 
     render() {
-
-
 
         // początek pomiaru wydajności
         this.stats.begin()
@@ -50891,7 +51038,7 @@ class Main {
 
 
         // delta do animacji
-        var delta = this.clock.getDelta();
+        let delta = this.clock.getDelta();
 
         // wykonanie funkcji update w module Animations - zobacz do pliku Animations
         if (this.animation) this.animation.update(delta)
@@ -50912,7 +51059,10 @@ class Main {
             if (_Config__WEBPACK_IMPORTED_MODULE_3__.default.moveForward) {
                 this.model.mesh.translateX(3)
             }
-            const camVect = new three__WEBPACK_IMPORTED_MODULE_9__.Vector3(-100, 50, 0)
+            if (_Config__WEBPACK_IMPORTED_MODULE_3__.default.moveBackward) {
+                this.model.mesh.translateX(-3)
+            }
+            const camVect = new three__WEBPACK_IMPORTED_MODULE_14__.Vector3(-100, 50, 0)
 
             const camPos = camVect.applyMatrix4(this.model.mesh.matrixWorld);
             this.camera.threeCamera.position.x = camPos.x
@@ -50960,8 +51110,8 @@ class Model {
     }
 
     load(path) {
-
-        const light = new three__WEBPACK_IMPORTED_MODULE_1__.PointLight( 0xffffff, 5, 10000 );
+        //10000
+        const light = new three__WEBPACK_IMPORTED_MODULE_1__.PointLight( 0xffffff, 5, 1000 );
         light.position.set( 50, 50, 50 );
         this.scene.add( light );
         // Manager is passed in to loader to determine when loading done in main
@@ -50977,7 +51127,7 @@ class Model {
                     map: new three__WEBPACK_IMPORTED_MODULE_1__.TextureLoader().load(_assets_bobafett_prototype_fett_png__WEBPACK_IMPORTED_MODULE_0__), // dowolny plik png, jpg
                     morphTargets: true // animowanie materiału modelu
                 }))
-
+                this.mesh.position.set(0,0,0);
                 this.scene.add(this.mesh);
                 console.log(this.geometry.animations) // tu powinny być widoczne animacje
 
@@ -51045,18 +51195,35 @@ class Net {
     // }
 
     async getMap()  {
-        const response = await fetch("http://localhost:5000/load", {
-            method: "POST",
-            body: JSON.stringify({}),
-            mode: "no-cors",
-            headers: {
-              "Content-type": "application/json; charset=UTF-8",
-              "Access-Control-Allow-Origin": "*"
-            }
-        });
-        let json = await response.json();
-        console.log(json)
+        // fetch("http://localhost:5000/load", {
+        //     method: "post",
+        //     mode: "no-cors",
+        //     headers: {
+        //       // "Content-type": "text/plain; charset=UTF-8",
+        //         "Content-type": "application/json; charset=UTF-8",
+        //       "Access-Control-Allow-Origin": "*"
+        //     }
+        // }).then( res => res.json())
+        //     .then(data => {
+        //     console.log(data)
+        // })
+        return new Promise( resolve => {
+            const xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status === 200) {
+                    let ob=JSON.parse(this.responseText); // JSON.stringify
+                    console.log(ob)
+                    resolve(ob)
+                }
+            };
+            xhttp.open("POST", "http://localhost:5000/load", true);
+            xhttp.setRequestHeader("Content-type", "text/plain; charset=UTF-8",);
+            xhttp.send();
+        })
+
     };
+
+
 }
 
 
@@ -51101,6 +51268,232 @@ class Renderer {
 
 /***/ }),
 
+/***/ "./src/components/Roof.js":
+/*!********************************!*\
+  !*** ./src/components/Roof.js ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Roof)
+/* harmony export */ });
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var _assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./assets/materials/cobblestone.jpg */ "./src/components/assets/materials/cobblestone.jpg");
+
+
+
+class Roof {
+    constructor(scene) {
+        console.log("ROOF",_assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__)
+        this.scene = scene;
+        this.geometry = new three__WEBPACK_IMPORTED_MODULE_1__.BoxGeometry(100,1,100);
+        this.material = new three__WEBPACK_IMPORTED_MODULE_1__.MeshBasicMaterial({
+            side: three__WEBPACK_IMPORTED_MODULE_1__.DoubleSide,
+            map: new three__WEBPACK_IMPORTED_MODULE_1__.TextureLoader().load(_assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__),
+            transparent: false,
+            opacity: 0.8,
+        });
+        for (let x = 0; x < 10; x++) {
+            for (let z = 0; z < 10; z++) {
+                this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
+                this.mesh.position.set(-500+50+x*50*2,150,-500+50+z*50*2);
+                this.scene.add(this.mesh)
+            }
+        }
+
+    }
+    update(){
+        //    NONE FOR NOW
+    }
+}
+
+
+/***/ }),
+
+/***/ "./src/components/Torch.js":
+/*!*********************************!*\
+  !*** ./src/components/Torch.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Torch)
+/* harmony export */ });
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+
+
+class Torch{
+    constructor(scene) {
+        //pusty kontener na inne obiekty 3D
+        this.container = new three__WEBPACK_IMPORTED_MODULE_0__.Object3D();
+        //wywołanie funkcji init()
+        this.init(scene)
+    }
+    init(scene) {
+
+        // utworzenie i pozycjonowanie światła
+
+        // this.light = new SpotLight(0xffffff, 100, 500, Math.PI / 8);
+        this.light = new three__WEBPACK_IMPORTED_MODULE_0__.SpotLight( 0xff0000, 10,200);
+        this.light.position.set(0, 0, 0); // ma być w pozycji 0,0,0 kontenera - nie zmieniamy
+        this.light.target = scene;
+
+        // dodanie światła do kontenera
+        this.container.add(this.light);
+
+        let lightMaterial = new three__WEBPACK_IMPORTED_MODULE_0__.MeshNormalMaterial({
+            color: 0xFF0000,
+            side: three__WEBPACK_IMPORTED_MODULE_0__.DoubleSide,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.5,
+            vertexColors: true
+        });
+        const sphere = new three__WEBPACK_IMPORTED_MODULE_0__.SphereGeometry( 50, 32, 32 );
+        //utworzenie widzialnego elementu reprezentującego światło (mały sześcian, kula, czworościan foremny, do wyboru)
+        this.mesh = new three__WEBPACK_IMPORTED_MODULE_0__.Mesh(sphere,lightMaterial)
+
+        // dodanie go do kontenera
+        this.container.add(this.mesh);
+    }
+
+
+    // funkcja zwracająca obiekt kontenera
+    // czyli nasze światło wraz z bryłą
+
+    getLight() {
+        return this.container;
+    }
+
+    // przykład innej funkcji, np do zmiany koloru bryły, zmiany koloru światła, etc
+    changeColor (color) {
+        console.log("zmiana koloru na " + color)
+    }
+
+    positionLight(grid_x,grid_y,grid_z){
+        this.container.position.set(-500+50+grid_x*50*2,0,-500+50+grid_z*50*2)
+    }
+
+    setShadow(shadow){
+        this.light.castShadow = shadow;
+    }
+}
+
+
+/***/ }),
+
+/***/ "./src/components/Treasure.js":
+/*!************************************!*\
+  !*** ./src/components/Treasure.js ***!
+  \************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Treasure)
+/* harmony export */ });
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var _assets_materials_woodenBox_jpg__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./assets/materials/woodenBox.jpg */ "./src/components/assets/materials/woodenBox.jpg");
+
+
+
+
+class Treasure{
+    constructor(scene,grid_x,grid_y,grid_z) {
+        console.log("Treasure")
+        this.scene = scene;
+        this.geometry = new three__WEBPACK_IMPORTED_MODULE_1__.BoxGeometry(100, 100, 100);
+        // this.material = new MeshBasicMaterial({
+        //     side: DoubleSide,
+        //     map: new TextureLoader().load(texture),
+        //     transparent: false,
+        //     opacity: 0.8,
+        // });
+        //
+        this.material = new three__WEBPACK_IMPORTED_MODULE_1__.MeshPhongMaterial({
+            color: 0x404040,
+            // color: 0xffffff,
+            specular: 0xffffff,
+            shininess: 100,
+            side: three__WEBPACK_IMPORTED_MODULE_1__.DoubleSide,
+            map: new three__WEBPACK_IMPORTED_MODULE_1__.TextureLoader().load(_assets_materials_woodenBox_jpg__WEBPACK_IMPORTED_MODULE_0__),
+        });
+
+        this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
+
+        // this.mesh.castShadow = true;
+
+        this.positionTreasure(grid_x,grid_y,grid_z);
+        this.scene.add(this.mesh)
+
+
+    }
+
+    positionTreasure(grid_x,grid_y,grid_z){
+        this.mesh.position.set(-500+50+grid_x*50*2,grid_y*50*2,-500+50+grid_z*50*2)
+    }
+
+}
+
+
+/***/ }),
+
+/***/ "./src/components/Wall.js":
+/*!********************************!*\
+  !*** ./src/components/Wall.js ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Wall)
+/* harmony export */ });
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var _assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./assets/materials/cobblestone.jpg */ "./src/components/assets/materials/cobblestone.jpg");
+
+
+
+class Wall {
+    constructor(scene,grid_x,grid_y,grid_z) {
+        // console.log("Wall")
+        this.scene = scene;
+        this.geometry = new three__WEBPACK_IMPORTED_MODULE_1__.BoxGeometry(100, 100, 100);
+        // this.material = new MeshBasicMaterial({
+        //     side: DoubleSide,
+        //     map: new TextureLoader().load(texture),
+        //     transparent: false,
+        //     opacity: 0.8,
+        // });
+        //
+        this.material = new three__WEBPACK_IMPORTED_MODULE_1__.MeshPhongMaterial({
+            color: 0x404040,
+            specular: 0xffffff,
+            shininess: 1000,
+            side: three__WEBPACK_IMPORTED_MODULE_1__.DoubleSide,
+            map: new three__WEBPACK_IMPORTED_MODULE_1__.TextureLoader().load(_assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__),
+        });
+
+        this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
+
+        this.mesh.castShadow = true;
+
+        this.positionWall(grid_x,grid_y,grid_z);
+        this.scene.add(this.mesh)
+
+
+    }
+
+    positionWall(grid_x,grid_y,grid_z){
+        this.mesh.position.set(-500+50+grid_x*50*2,grid_y*50*2,-500+50+grid_z*50*2)
+    }
+
+}
+
+
+/***/ }),
+
 /***/ "./src/components/assets/bobafett/prototype_fett.png":
 /*!***********************************************************!*\
   !*** ./src/components/assets/bobafett/prototype_fett.png ***!
@@ -51118,6 +51511,26 @@ module.exports = __webpack_require__.p + "02dc25d734c52be29441.png";
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 module.exports = __webpack_require__.p + "ffee80ef7d056152eb93.jpg";
+
+/***/ }),
+
+/***/ "./src/components/assets/materials/woodenBox.jpg":
+/*!*******************************************************!*\
+  !*** ./src/components/assets/materials/woodenBox.jpg ***!
+  \*******************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "5e731b139baddeca2bea.jpg";
+
+/***/ }),
+
+/***/ "./src/components/assets/ogre/Ogre.png":
+/*!*********************************************!*\
+  !*** ./src/components/assets/ogre/Ogre.png ***!
+  \*********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "7adc22bd40ee474c3163.png";
 
 /***/ })
 
@@ -51245,6 +51658,7 @@ function init() {
     const container = document.getElementById('root');
     //main class object
     const main = new _components_Main__WEBPACK_IMPORTED_MODULE_1__.default(container);
+    main.generateMap()
 
 }
 

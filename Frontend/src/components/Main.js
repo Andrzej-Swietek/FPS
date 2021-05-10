@@ -21,6 +21,8 @@ import Floor from "./Floor";
 import Wall from "./Wall";
 import Torch from "./Torch";
 import Treasure from "./Treasure";
+import Roof from "./Roof";
+import Enemy from "./Enemy";
 
 export default class Main {
     constructor(container) {
@@ -96,34 +98,80 @@ export default class Main {
 
         };
 
-
+        // ==================== EXAMPLE LEVEL ====================
         this.level = [{"id":0,"x":1,"y":0,"z":1,"type":"wall"},{"id":1,"x":8,"y":0,"z":1,"type":"wall"},{"id":2,"x":8,"y":0,"z":8,"type":"wall"},{"id":3,"x":1,"y":0,"z":8,"type":"wall"},{"id":4,"x":1,"y":0,"z":7,"type":"wall"},{"id":5,"x":1,"y":0,"z":6,"type":"wall"},{"id":6,"x":1,"y":0,"z":2,"type":"wall"},{"id":7,"x":1,"y":0,"z":3,"type":"wall"},{"id":8,"x":2,"y":0,"z":8,"type":"wall"},{"id":9,"x":3,"y":0,"z":8,"type":"wall"},{"id":10,"x":6,"y":0,"z":8,"type":"wall"},{"id":11,"x":7,"y":0,"z":8,"type":"wall"},{"id":12,"x":8,"y":0,"z":7,"type":"wall"},{"id":13,"x":8,"y":0,"z":6,"type":"wall"},{"id":14,"x":8,"y":0,"z":2,"type":"wall"},{"id":15,"x":8,"y":0,"z":3,"type":"wall"},{"id":16,"x":7,"y":0,"z":1,"type":"wall"},{"id":17,"x":6,"y":0,"z":1,"type":"wall"},{"id":18,"x":2,"y":0,"z":1,"type":"wall"},{"id":19,"x":3,"y":0,"z":1,"type":"wall"},{"id":20,"x":2,"y":0,"z":2,"type":"light"},{"id":21,"x":2,"y":0,"z":7,"type":"light"},{"id":22,"x":7,"y":0,"z":7,"type":"light"},{"id":23,"x":7,"y":0,"z":2,"type":"light"},{"id":24,"x":4,"y":0,"z":4,"type":"treasure"},{"id":25,"x":5,"y":0,"z":4,"type":"treasure"},{"id":26,"x":5,"y":0,"z":5,"type":"treasure"},{"id":27,"x":4,"y":0,"z":5,"type":"treasure"},{"id":28,"x":0,"y":0,"z":0,"type":"light"},{"id":29,"x":9,"y":0,"z":0,"type":"light"},{"id":30,"x":9,"y":0,"z":9,"type":"light"},{"id":31,"x":0,"y":0,"z":9,"type":"light"}]
 
 
-        this.level.forEach( field => {
-            if (field.type === 'wall'){
-                new Wall(this.scene, field.x,0,field.z);
-                new Wall(this.scene, field.x,1,field.z);
-            } else if (field.type === 'treasure'){
-                new Treasure(this.scene, field.x,0,field.z)
-            }
-        })
-
         this.floor = new Floor(this.scene);
-        this.test_wall = new Wall(this.scene, 1,0,1);
-        this.test_wall2 = new Wall(this.scene, 1,1,1);
+        this.roof = new Roof(this.scene);
 
-        this.test_torch = new Torch(this.scene)
-        this.scene.add(this.test_torch.getLight())
-        this.test_torch.positionLight(2,0,2);
+
+        // this.test_wall = new Wall(this.scene, 1,0,1);
+        // this.test_wall2 = new Wall(this.scene, 1,1,1);
+
+        // this.test_torch = new Torch(this.scene)
+        // this.scene.add(this.test_torch.getLight())
+        // this.test_torch.positionLight(2,0,2);
         // this.test_torch.setShadow(true);
+
+        // this.test_torch2 = new Torch(this.scene)
+        // this.scene.add(this.test_torch2.getLight())
+        // this.test_torch2.positionLight(6,1,6);
+
         this.render();
 
         this.GUI = new GUI();
         this.net = new Net();
-        // this.net.getMap()
 
 
+        document.getElementById('camera--fov').addEventListener('input', ()=> {
+            console.log(document.getElementById('camera--fov').value/100 * 75, this.camera.threeCamera.fov)
+            this.camera.threeCamera.fov = parseInt(document.getElementById('camera--fov').value) + 75;
+            // this.camera.threeCamera.fov = 20;
+            this.camera.threeCamera.updateProjectionMatrix();
+        });
+
+        document.getElementById('camera-height').addEventListener('input', ()=> {
+            console.log(document.getElementById('camera-height').value)
+        })
+
+    }
+
+
+    async generateMap() {
+       this.level = await this.net.getMap()
+        console.log("LV",this.level)
+
+        this.level.forEach( field => {
+            if (field.type === 'wall'){
+
+                new Wall(this.scene, field.x,0,field.z);
+                new Wall(this.scene, field.x,1,field.z);
+
+            } else if (field.type === 'treasure'){
+
+                new Treasure(this.scene, field.x,0,field.z)
+
+            } else if (field.type === 'light'){
+
+                let t =  new Torch(this.scene);
+                this.scene.add(t.getLight())
+                t.positionLight(field.x,2,field.z);
+
+            } else if (field.type === 'enemy'){
+
+                let ogreManager =  new LoadingManager();
+                let ogre = new Enemy(this.scene, ogreManager);
+                ogre.load("./dist/assets/ogre.md2",field.x,0,field.z);
+
+                ogreManager.onLoad = () => {
+                    // this.isLoaded = true;
+                    console.log("OGRE LOADED!!!")
+                     let ogreAnimation = new Animation(ogre.mesh)
+                    ogreAnimation.playAnim("stand")
+                };
+            }
+        })
     }
 
     render() {
@@ -172,6 +220,7 @@ export default class Main {
         this.stats.end()
 
         requestAnimationFrame(this.render.bind(this));
+
     }
 
 }

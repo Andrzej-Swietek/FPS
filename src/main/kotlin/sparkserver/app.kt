@@ -53,6 +53,7 @@ fun load(req:Request,res:Response):String {
     res.header("Access-Control-Allow-Origin", "*");
     // to zwraca jsona
     res.type("application/json")
+//    res.type("text/plain")
     println(Gson().toJson(level.levelItemsList))
 
     val respData = Gson().toJson(level.levelItemsList)
@@ -60,4 +61,5 @@ fun load(req:Request,res:Response):String {
     println( respData )
 
     return respData
+//    return "{\"test\": \"a\"}"
 }

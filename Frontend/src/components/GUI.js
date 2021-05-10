@@ -63,10 +63,15 @@ export default class GUI {
             input.classList.add("focused")
             input.classList.add("range")
             input.classList.add("rangeM")
-            input.min = 0;
-            input.max = 1;
-            input.value = 0.5;
-            input.step = 0.1;
+            input.min = 1;
+            input.max = 100;
+            input.value = 50;
+            if (silderTitle === 'Camera  fov')
+                input.value = 1;
+            else if(silderTitle === 'Light intensity') {
+                input.value = 25
+            }
+            input.step = 1;
 
             div.append(desc);
             div.append(input);

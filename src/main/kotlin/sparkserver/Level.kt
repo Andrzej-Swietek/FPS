@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken
 class Level() {
     val type = object : TypeToken<MutableList<LevelItem>>() {}.type
     var levelItemsList: MutableList<LevelItem>
-
+    val size: Int = 10
     init {
         this.levelItemsList = mutableListOf(
             LevelItem(0, x=1, y=0, z=1, type="wall"),

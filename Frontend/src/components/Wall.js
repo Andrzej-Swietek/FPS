@@ -11,7 +11,7 @@ import texture from "./assets/materials/cobblestone.jpg"
 
 export default class Wall {
     constructor(scene,grid_x,grid_y,grid_z) {
-        console.log("Wall")
+        // console.log("Wall")
         this.scene = scene;
         this.geometry = new BoxGeometry(100, 100, 100);
         // this.material = new MeshBasicMaterial({
@@ -23,8 +23,9 @@ export default class Wall {
         //
         this.material = new MeshPhongMaterial({
             color: 0x404040,
-            specular: 0xffffff,
-            shininess: 1000,
+            // specular: 0xffffff,
+            specular: 0x111111,
+            shininess: 100,
             side: DoubleSide,
             map: new TextureLoader().load(texture),
         });

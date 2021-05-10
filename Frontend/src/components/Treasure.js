@@ -24,6 +24,7 @@ export default class Treasure{
         //
         this.material = new MeshPhongMaterial({
             color: 0x404040,
+            // color: 0xffffff,
             specular: 0xffffff,
             shininess: 100,
             side: DoubleSide,

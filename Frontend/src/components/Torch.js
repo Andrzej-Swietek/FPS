@@ -1,4 +1,14 @@
-import {Mesh, PointLight, AmbientLight,Object3D, MeshNormalMaterial, DoubleSide, SphereGeometry, SpotLight} from "three"
+import {
+    Mesh,
+    PointLight,
+    AmbientLight,
+    Object3D,
+    MeshNormalMaterial,
+    DoubleSide,
+    SphereGeometry,
+    SpotLight,
+    PointLightHelper, DirectionalLight, DirectionalLightHelper, SpotLightHelper
+} from "three"
 
 export default class Torch{
     constructor(scene) {
@@ -12,9 +22,18 @@ export default class Torch{
         // utworzenie i pozycjonowanie światła
 
         // this.light = new SpotLight(0xffffff, 100, 500, Math.PI / 8);
-        this.light = new SpotLight( 0xff0000, 10,200);
+        this.light = new SpotLight( 0xffffff, 1,700);
+        // this.light = new PointLight( 0xffffff, 2,1);
+        // this.light = new AmbientLight(0xffffff, .2)
+        // this.light = new DirectionalLight( 0xFFFFFF, .7 );
+
+        // this.lightHelper = new PointLightHelper(this.light)
+        // this.lightHelper = new DirectionalLightHelper( this.light, 5 );
+        this.lightHelper = new SpotLightHelper(this.light)
+
+        scene.add(this.lightHelper)
         this.light.position.set(0, 0, 0); // ma być w pozycji 0,0,0 kontenera - nie zmieniamy
-        this.light.target = scene;
+        // this.light.target = scene;
 
         // dodanie światła do kontenera
         this.container.add(this.light);
@@ -33,6 +52,12 @@ export default class Torch{
 
         // dodanie go do kontenera
         this.container.add(this.mesh);
+
+        document.getElementById('light-intensity').addEventListener('input', ()=> {
+            let newValue = parseInt(document.getElementById('light-intensity').value)/100+1
+            console.log("%c "+newValue, 'color: yellow')
+            this.light.intensity = newValue
+        })
     }
 
 
@@ -49,7 +74,7 @@ export default class Torch{
     }
 
     positionLight(grid_x,grid_y,grid_z){
-        this.container.position.set(-500+50+grid_x*50*2,0,-500+50+grid_z*50*2)
+        this.container.position.set(-500+50+grid_x*50*2,grid_y*50,-500+50+grid_z*50*2)
     }
 
     setShadow(shadow){
