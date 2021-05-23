@@ -1,4 +1,5 @@
-import { MD2Loader } from 'three/examples/jsm/loaders/MD2Loader.js';
+// import { MD2Loader } from 'three/examples/jsm/loaders/MD2Loader.js';
+import { MD2Loader } from './MD2Loader';
 import {Mesh, TextureLoader, MeshPhongMaterial, PointLight, AmbientLight} from "three"
 import marioTex from "./assets/bobafett/prototype_fett.png"
 

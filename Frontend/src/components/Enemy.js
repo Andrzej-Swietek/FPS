@@ -1,8 +1,11 @@
-import { MD2Loader } from 'three/examples/jsm/loaders/MD2Loader.js';
-import {Mesh, TextureLoader, MeshPhongMaterial, PointLight, AmbientLight} from "three"
+import { MD2Loader } from './MD2Loader';
+import {Mesh, TextureLoader, MeshPhongMaterial, PointLight, AmbientLight, LoadingManager} from "three"
 
 
-import marioTex from "./assets/ogre/Ogre.png"
+// import marioTex from "./assets/ogre/Ogre.png"
+//import marioTex from "./assets/knight/bs.jpg"
+import marioTex from "./assets/bobafett/prototype_fett.png"
+import Animation from "./Animation";
 
 
 export default class Enemy {

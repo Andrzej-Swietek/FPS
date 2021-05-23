@@ -92,6 +92,28 @@ h1  {
       }
     }
   }
+  .fire-settings-element-container{
+    @include df(column,nowrap, space-evenly, center);
+    width: 30%;
+    padding: 0 2rem;
+    border-left: 3px solid black;
+    height: 20vh;
+    background: darken($settingsBg,15%);
+    font-size: 1.6rem;
+    color: azure;
+
+
+    div {
+      @include df(row,nowrap, center, center);
+      width: 100%;
+      height: 25%;
+      margin: 1rem;
+
+      input{
+        margin-left: 1.5rem;
+      }
+    }
+  }
 }
 
 #sidebar {
@@ -274,3 +296,5 @@ input[type=range]:focus {
   }
 
 }
+
+

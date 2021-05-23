@@ -70,6 +70,11 @@ export default class GUI {
                 input.value = 1;
             else if(silderTitle === 'Light intensity') {
                 input.value = 25
+                input.max = 200;
+            }
+            else if (silderTitle === 'Camera X angle'){
+                input.value = 100
+                input.max = 200;
             }
             input.step = 1;
 
@@ -78,6 +83,27 @@ export default class GUI {
 
             settings.append(div)
         })
+
+        let fireplaceSettings = document.createElement('div');
+        fireplaceSettings.classList.add('fire-settings-element-container');
+
+        let row1 = document.createElement('div');
+        this.createDescription(row1,'Fire Size')
+        this.createInput(row1, 'Fire Size',1,400,50);
+
+        let row2 = document.createElement('div');
+        this.createDescription(row2,'Fire Width X')
+        this.createInput(row2, 'Fire Width X',1,500,50);
+
+        let row3 = document.createElement('div');
+        this.createDescription(row3,'Fire Width Z')
+        this.createInput(row3, 'Fire Width Z',1,500,50);
+
+        fireplaceSettings.append(row1)
+        fireplaceSettings.append(row2)
+        fireplaceSettings.append(row3)
+        settings.append(fireplaceSettings)
+
         let checkboxes = document.createElement('div');
         checkboxes.classList.add('checkbox-element-container');
 
@@ -96,6 +122,25 @@ export default class GUI {
         settings.append(checkboxes)
 
         document.body.append(settings)
+    }
+
+    createInput(container, id,min,max,v){
+        let input = document.createElement('input');
+        input.id = id.replaceAll(' ','-').toLowerCase();
+        input.type = 'range';
+        input.classList.add("focused")
+        input.classList.add("range")
+        input.classList.add("rangeM")
+        input.min = min;
+        input.max = max;
+        input.value = v;
+        input.step = 1;
+        container.append(input)
+    }
+    createDescription(container, sliderTitle){
+        let desc = document.createElement('h5');
+        desc.innerText = `${sliderTitle}`
+        container.append(desc)
     }
 
 

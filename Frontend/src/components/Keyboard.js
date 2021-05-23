@@ -27,6 +27,7 @@ export default class Keyboard {
     }
 
     onKeyUp(event) {
+        this.animation.playAnim("stand")
         switch (event.keyCode) {
             case KEYS.up:
             case KEYS.w:
@@ -47,7 +48,7 @@ export default class Keyboard {
 
 
         }
-        console.log('onKeyChange', event.keyCode)
+        // console.log('onKeyChange', event.keyCode)
     }
 
     onKeyDown(event) {
@@ -55,6 +56,7 @@ export default class Keyboard {
             case KEYS.up:
             case KEYS.w:
                 Config.moveForward = true;
+                this.animation.playAnim("run")
                 break;
             case KEYS.left:
             case KEYS.a:
@@ -67,6 +69,7 @@ export default class Keyboard {
             case KEYS.down:
             case KEYS.s:
                 Config.moveBackward = true;
+                this.animation.playAnim("crwalk")
                 break;
         }
 
