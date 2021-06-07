@@ -269,12 +269,15 @@ export default class Main {
                 this.scene.add(firePlace)
 
             } else if (field.type === 'enemy'){
-                this.createEnemy(field)
+                this.createEnemy(field).then( obj =>{
+                    this.enemies[this.enemies.length] = obj
+                } )
                 // console.log(enemy_model)
             }
 
         })
         console.log(this.walls)
+        console.log(this.enemies)
 
 
     }
@@ -287,24 +290,28 @@ export default class Main {
     }
 
     createEnemy(field){
-            this.enemyManager =  new LoadingManager();
-            this.enemy = new Enemy(this.scene, this.enemyManager);
+        return new Promise(resolve => {
+            let enemyManager =  new LoadingManager();
+            let enemy = new Enemy(this.scene, enemyManager);
             // ogre.load("./dist/assets/ogre.md2",field.x,0,field.z);
             // ogre.load("./dist/assets/knight.md2",field.x,0,field.z);
-            this.enemy.load("./dist/assets/knight.md2",field.x,0,field.z);
-            this.enemyManager.onProgress = (item, loaded, total) => {
+            enemy.load("./dist/assets/knight.md2",field.x,0,field.z);
+            enemyManager.onProgress = (item, loaded, total) => {
                 console.log(`progress ${item}: ${loaded} ${total}`);
             };
-            this.enemyManager.onLoad = () => {
+            enemyManager.onLoad = () => {
                 // this.isLoaded = true;
                 console.log("ENEMY LOADED!!!")
-                let enemyAnimation = new Animation(this.enemy.mesh)
-                enemyAnimation.playAnim("crwalk")
-                this.enemies.push( { model: this.enemy, anim:enemyAnimation } )
-                // this.enemies.push(this.enemy)
-            };
+                let enemyAnimation = new Animation(enemy.mesh)
+                enemyAnimation.playAnim("stand")
 
-        console.log(this.enemy, this.enemies)
+
+                resolve({ model: enemy, anim:enemyAnimation })
+            };
+        })
+
+
+        // console.log("=========================== ",this.enemies,"=========================== ")
     }
     render() {
 
@@ -317,7 +324,11 @@ export default class Main {
 
         // wykonanie funkcji update w module Animations - zobacz do pliku Animations
         if (this.animation) this.animation.update(delta)
-        // if(this.enemies) console.log(this.enemies, this.enemy) // dla kaazdego enemy analogicznie do this.animation.update(delta)
+        if(this.enemies.length >= 1) {
+            // console.log(this.enemies, this.enemy)
+            this.enemies[0].anim.update(delta)
+            // console.log(this.enemies)
+        }  // dla kazdego enemy analogicznie do this.animation.update(delta)
 
 
         this.renderer.render(this.scene, this.camera.threeCamera);
@@ -325,11 +336,14 @@ export default class Main {
         // obsługa ruch modelu dopiero kiedy jest załadowany, można tą część umieścić w module Keyboard
         // tworząc w nim no prunkcję update() i wywoływać ją poniżej
         // console.log(this.enemies)
-        if(this.enemies[0])  this.enemies[0].anim.playAnim("crwalk")
+        // if(this.enemies[0])  this.enemies[0].anim.playAnim("crwalk")
         if (this.model.mesh) {
-            this.l1.position.set(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z) //TODO: TEST LASER
+            this.l1.position.set(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z)
             if ( !this.playerWallCollision )
                 this.playerWallCollision = new Collision(this.model.mesh, this.walls)
+
+            // if ( !this.playerEnemyCollision && this.enemies.length >=1)
+            //     this.playerEnemyCollision = new Collision(this.model.mesh, this.enemies)
 
 
             if (this.walls.length > 0){
@@ -342,8 +356,18 @@ export default class Main {
                     else this.collisionStopper = 1
 
                 })
-
             }
+
+            // if ( this.enemies.length >= 1 ){
+            //     this.playerEnemyCollision.update(element =>{
+            //         if (element.distance < 100){
+            //         //    TODO play animation
+            //             let index = this.enemies.indexOf(element)
+            //             this.enemies[index].anim.playAnim("crattak")
+            //         }
+            //     })
+            // }
+
 
             if (Config.rotateLeft) {
                 this.model.mesh.rotation.y += 0.05

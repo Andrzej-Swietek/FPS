@@ -56,8 +56,9 @@ export default class Keyboard {
         switch (event.keyCode) {
             case KEYS.up:
             case KEYS.w:
+                if (!Config.moveForward) this.animation.playAnim("run")
                 Config.moveForward = true;
-                this.animation.playAnim("run")
+
                 break;
             case KEYS.left:
             case KEYS.a:
@@ -69,12 +70,12 @@ export default class Keyboard {
                 break;
             case KEYS.down:
             case KEYS.s:
+                if (!Config.moveBackward) this.animation.playAnim("crwalk")
                 Config.moveBackward = true;
-                this.animation.playAnim("crwalk")
                 break;
             case KEYS.spacebar:
+                 this.animation.playAnim("crattak")
                 Config.attack = true;
-                this.animation.playAnim("crattak")
                 break;
         }
 
