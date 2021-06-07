@@ -50134,7 +50134,7 @@ class Collision {
         console.log(this)
     }
     update(callback){
-        this.raycaster.ray = new three__WEBPACK_IMPORTED_MODULE_0__.Ray(this.objectToWatch.position, this.objectToWatch.getWorldDirection().multiplyScalar(-1))
+        this.raycaster.ray = new three__WEBPACK_IMPORTED_MODULE_0__.Ray(this.objectToWatch.position, this.objectToWatch.getWorldDirection(new three__WEBPACK_IMPORTED_MODULE_0__.Vector3()).multiplyScalar(-1))
         this.intersects = this.raycaster.intersectObjects(this.interactWith, true);
         if (this.intersects[0]) {
             // console.log(this.intersects[0].distance)
@@ -50295,19 +50295,21 @@ class Fireplace extends three__WEBPACK_IMPORTED_MODULE_2__.Object3D {
         document.querySelector('#fire-size').addEventListener('input', (e)=>{
             let factor = e.target.value / 100 * 2
             // this.scale.set(factor * 1,factor * 1,factor * 1)
-            this.scale.y = factor;
-
+            // this.scale.y = factor;
+            this.particles.forEach(p=> p.scale.y=factor*10)
             // prev = this.position.x
         })
 
         document.querySelector('#fire-width-x').addEventListener('input', (e)=>{
             let factor = e.target.value / 100 * 2
-            this.scale.x = factor;
+            // this.scale.x = factor;
+            this.particles.forEach(p=> p.scale.x=factor*10)
         })
 
         document.querySelector('#fire-width-z').addEventListener('input', (e)=>{
             let factor = e.target.value / 100 * 2
-            this.scale.z = factor;
+            // this.scale.z = factor;
+            this.particles.forEach(p=> p.scale.z=factor*10)
         })
     }
 
@@ -50363,7 +50365,8 @@ class Floor {
         console.log("FLOOR",_assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__)
         this.scene = scene;
         this.geometry = new three__WEBPACK_IMPORTED_MODULE_1__.BoxGeometry(100,1,100);
-        this.material = new three__WEBPACK_IMPORTED_MODULE_1__.MeshBasicMaterial({
+        // this.material = new MeshBasicMaterial({
+        this.material = new three__WEBPACK_IMPORTED_MODULE_1__.MeshPhongMaterial({
             side: three__WEBPACK_IMPORTED_MODULE_1__.DoubleSide,
             map: new three__WEBPACK_IMPORTED_MODULE_1__.TextureLoader().load(_assets_materials_cobblestone_jpg__WEBPACK_IMPORTED_MODULE_0__),
             transparent: false,
@@ -50373,6 +50376,8 @@ class Floor {
             for (let z = 0; z < 10; z++) {
                 this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
                 this.mesh.position.set(-500+50+x*50*2,-25,-500+50+z*50*2);
+                this.mesh.castShadow = true;
+                this.mesh.receiveShadow = true;
                 this.scene.add(this.mesh)
             }
         }
@@ -50570,7 +50575,8 @@ const KEYS = {
     "w": 87,
     "s": 83,
     "a": 65,
-    "d": 68
+    "d": 68,
+    "spacebar":32
 };
 
 class Keyboard {
@@ -50609,7 +50615,7 @@ class Keyboard {
 
 
         }
-        console.log('onKeyChange', event.keyCode)
+        // console.log('onKeyChange', event.keyCode)
     }
 
     onKeyDown(event) {
@@ -50632,11 +50638,108 @@ class Keyboard {
                 _Config__WEBPACK_IMPORTED_MODULE_1__.default.moveBackward = true;
                 this.animation.playAnim("crwalk")
                 break;
+            case KEYS.spacebar:
+
+                break;
         }
 
     }
 
 
+}
+
+
+/***/ }),
+
+/***/ "./src/components/Laser.js":
+/*!*********************************!*\
+  !*** ./src/components/Laser.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Laser)
+/* harmony export */ });
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var _assets_fire_png__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./assets/fire.png */ "./src/components/assets/fire.png");
+
+
+class Laser {
+    constructor(scene) {
+        this.particlesCount = 1000;
+        this.verticesArray = new Float32Array(this.particlesCount * 3);
+        this.particlesGeometry = new three__WEBPACK_IMPORTED_MODULE_1__.BufferGeometry();
+
+        this.particleMaterial = new three__WEBPACK_IMPORTED_MODULE_1__.PointsMaterial({
+            color: 0x6622ee,
+            depthWrite: false,
+            transparent: true,
+            size: 20,
+            map: new three__WEBPACK_IMPORTED_MODULE_1__.TextureLoader().load(_assets_fire_png__WEBPACK_IMPORTED_MODULE_0__),
+            blending: three__WEBPACK_IMPORTED_MODULE_1__.AdditiveBlending
+        });
+        this.scene = scene;
+    }
+    shoot(fromVector, destinationVector){
+
+        this.v1 = fromVector;
+        this.v2 = destinationVector;
+        console.log(this.v1, this.v2);
+        this.subV = this.v2.clone().sub(this.v1.clone());
+        this.particlesCount = 1000;
+        let stepV = this.subV.divideScalar(this.particlesCount); // particlesCount - przewidywana ilość cząsteczek na linii a-b
+        this.stepV = stepV;
+        this.laser(this.particlesCount, this.verticesArray, this.particlesGeometry, this.particleMaterial, this.scene);
+
+        this.laserPositions = this.particlesGeometry.attributes.position.array;
+        this.mnoznikLasera  = 0.1;
+
+    }
+    laser(particlesCount, verticesArray, particlesGeometry, particleMaterial,scene){
+
+        for (let i = 0; i < particlesCount; i+=3) {
+
+            verticesArray[i] = i*this.stepV.x;
+            verticesArray[i+1] = 0;
+            // verticesArray[i+2] = 0;
+            verticesArray[i+2] = i*this.stepV.z;
+
+        }
+        // console.log(verticesArray)
+        // poniższa linia przypisuje geometrii naszą tablicę punktów
+
+        particlesGeometry.setAttribute("position", new three__WEBPACK_IMPORTED_MODULE_1__.BufferAttribute(verticesArray, 3))
+
+        // z geometrii jak zawsze powstaje mesh, złożony
+        // z geometrii i materiału typu Points
+
+        this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Points(particlesGeometry,particleMaterial)
+        scene.add(this.mesh)
+    }
+
+    update(){
+        for (let i = 0; i < this.laserPositions.length; i+=3) {
+            let losowa = 0
+            const normalizedV = this.stepV.clone().normalize()
+            if(Math.floor(Math.random() * 2) == 1){
+                losowa = -Math.random()*this.mnoznikLasera
+            }
+            else{
+                // losowa = Math.random()*this.mnoznikLasera*normalizedV
+                losowa = Math.random()*this.mnoznikLasera
+            }
+
+            this.laserPositions[i] += normalizedV.clone().multiplyScalar( losowa ).x
+            this.laserPositions[i+1] += normalizedV.clone().multiplyScalar( losowa ).y
+            this.laserPositions[i+2] += normalizedV.clone().multiplyScalar( losowa ).z
+
+        }
+        this.particlesGeometry.attributes.position.needsUpdate = true
+    }
+    delete(){
+        this.scene.remove(this.mesh)
+    }
 }
 
 
@@ -51065,12 +51168,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Main)
 /* harmony export */ });
-/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
 /* harmony import */ var _Model__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Model */ "./src/components/Model.js");
 /* harmony import */ var _Keyboard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Keyboard */ "./src/components/Keyboard.js");
 /* harmony import */ var _Animation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Animation */ "./src/components/Animation.js");
 /* harmony import */ var _Config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Config */ "./src/components/Config.js");
-/* harmony import */ var three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! three/examples/jsm/libs/stats.module.js */ "./node_modules/three/examples/jsm/libs/stats.module.js");
+/* harmony import */ var three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! three/examples/jsm/libs/stats.module.js */ "./node_modules/three/examples/jsm/libs/stats.module.js");
 /* harmony import */ var _Renderer__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Renderer */ "./src/components/Renderer.js");
 /* harmony import */ var _Camera__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Camera */ "./src/components/Camera.js");
 /* harmony import */ var _GUI__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./GUI */ "./src/components/GUI.js");
@@ -51083,6 +51186,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Enemy__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./Enemy */ "./src/components/Enemy.js");
 /* harmony import */ var _Fireplace__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./Fireplace */ "./src/components/Fireplace.js");
 /* harmony import */ var _Collision__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./Collision */ "./src/components/Collision.js");
+/* harmony import */ var _Laser__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./Laser */ "./src/components/Laser.js");
 
 
 
@@ -51104,6 +51208,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 class Main {
 
     constructor(container) {
@@ -51112,15 +51217,17 @@ class Main {
         this.animation = null
 
         this.container = container;
-        this.scene = new three__WEBPACK_IMPORTED_MODULE_16__.Scene();
+        this.scene = new three__WEBPACK_IMPORTED_MODULE_17__.Scene();
         this.renderer = new _Renderer__WEBPACK_IMPORTED_MODULE_4__.default(this.scene, container);
         this.camera = new _Camera__WEBPACK_IMPORTED_MODULE_5__.default(this.renderer.threeRenderer);
         this.cameraHeight = 50;
         this.cameraXangle = 100;
         this.cameraZangle = 100;
         this.firePlaces = [];
-        this.enemies = []
+        this.enemies = [];
         this.walls = [];
+        this.viewMode = "normal";
+        this.collisionStopper = 1;
         // ==================== LIGHT ====================
 
         // const light = new THREE.PointLight( 0xff0000, 1, 100 );
@@ -51130,24 +51237,24 @@ class Main {
         // ==================== GRID ====================
         // testowa siatka na podłoże modelu
 
-        const gridHelper = new three__WEBPACK_IMPORTED_MODULE_16__.GridHelper(1000, 10);
+        const gridHelper = new three__WEBPACK_IMPORTED_MODULE_17__.GridHelper(1000, 10);
         this.scene.add(gridHelper);
 
         // ==================== STATS ====================
         // statystyki wydajności
 
-        this.stats = new three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_17__.default();
+        this.stats = new three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_18__.default();
         this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb
 
         document.body.appendChild(this.stats.dom);
 
         // ==================== ZEGAR ====================
 
-        this.clock = new three__WEBPACK_IMPORTED_MODULE_16__.Clock()
+        this.clock = new three__WEBPACK_IMPORTED_MODULE_17__.Clock()
 
         // manager loadingu, pozwala monitorować progress oraz fakt zakończenia ładowania
 
-        this.manager = new three__WEBPACK_IMPORTED_MODULE_16__.LoadingManager();
+        this.manager = new three__WEBPACK_IMPORTED_MODULE_17__.LoadingManager();
 
         // ==================== MODEL ====================
 
@@ -51210,6 +51317,7 @@ class Main {
             console.log("%c CAMERA HEIGHT: "+newHeight, 'color: orange');
             this.cameraHeight = newHeight;
         });
+
         document.getElementById('camera-x-angle').addEventListener('input', ()=> {
             let newXangle = parseInt(document.getElementById('camera-x-angle').value)
             console.log("%c CAMERA X Angle: "+newXangle, 'color: red');
@@ -51221,6 +51329,40 @@ class Main {
             console.log("%c CAMERA Z Angle: "+newZangle, 'color: red');
             this.cameraZangle = newZangle;
         });
+
+        document.getElementById('view-from-top').addEventListener('input', ()=>{
+            if (this.viewMode === 'normal'){
+                this.viewMode = 'top';
+                this.roof.makeInvisible()
+            }
+            else {
+                this.viewMode = 'normal';
+                this.roof.makeVisible()
+            }
+            console.log(this.viewMode, document.getElementById('view-from-top').value )
+        })
+
+        document.getElementById('shadows').addEventListener('input',()=>{
+            this.enableShadows();
+        })
+
+        document.body.onkeydown = (e)=> {
+            if (e.keyCode === 32){
+                this.laser = new _Laser__WEBPACK_IMPORTED_MODULE_16__.default(this.scene);
+                console.log(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z);
+                let playerPosVector = new three__WEBPACK_IMPORTED_MODULE_17__.Vector3(this.model.mesh.position.x, this.model.mesh.position.y, this.model.mesh.position.z);
+                // let destinationVect = playerPosVect.clone().add(new Vector3(100,0,0));
+                let destinationVector = new three__WEBPACK_IMPORTED_MODULE_17__.Vector3(this.model.mesh.position.x+100,0,0);
+                // let destinationVect = new Vector3(this.model.mesh.position.x+100, this.model.mesh.position.y, this.model.mesh.position.z);
+                // let destinationVect = new Vector3(this.model.mesh.position.x+100, 0, this.model.mesh.position.z);
+                // console.log( destinationVect ,playerPosVect);
+                this.laser.shoot(  playerPosVector, destinationVector );
+
+                setTimeout( ()=>{
+                    this.laser.delete();
+                }, 1000 )
+            }
+        }
 
     }
 
@@ -51259,6 +51401,8 @@ class Main {
 
         })
         console.log(this.walls)
+
+
     }
     async addColliders(){
         return new Promise( resolve => {
@@ -51268,8 +51412,8 @@ class Main {
 
     }
 
-     createEnemy(field){
-            this.enemyManager =  new three__WEBPACK_IMPORTED_MODULE_16__.LoadingManager();
+    createEnemy(field){
+            this.enemyManager =  new three__WEBPACK_IMPORTED_MODULE_17__.LoadingManager();
             this.enemy = new _Enemy__WEBPACK_IMPORTED_MODULE_13__.default(this.scene, this.enemyManager);
             // ogre.load("./dist/assets/ogre.md2",field.x,0,field.z);
             // ogre.load("./dist/assets/knight.md2",field.x,0,field.z);
@@ -51315,8 +51459,13 @@ class Main {
 
             if (this.walls.length > 0){
                 this.playerWallCollision.update((element)=>{
-                    if (element.distance < 10)
+                    if (element.distance < 100){
+                        console.log(element.distance, element.object)
                         console.log("%c INTERACTED WITH: "+element,'color: purple')
+                        this.collisionStopper = 0
+                    }
+                    else this.collisionStopper = 1
+
                 })
 
             }
@@ -51328,30 +51477,50 @@ class Main {
                 this.model.mesh.rotation.y -= 0.05
             }
             if (_Config__WEBPACK_IMPORTED_MODULE_3__.default.moveForward) {
-                this.model.mesh.translateX(3);
+                this.model.mesh.translateX(3*this.collisionStopper);
             }
             if (_Config__WEBPACK_IMPORTED_MODULE_3__.default.moveBackward) {
                 this.model.mesh.translateX(-3)
             }
             // const camVect = new Vector3(-100, 50, 0)
-            const camVect = new three__WEBPACK_IMPORTED_MODULE_16__.Vector3(-this.cameraXangle, this.cameraHeight, this.cameraZangle-50)
+            const camVect = new three__WEBPACK_IMPORTED_MODULE_17__.Vector3(-this.cameraXangle, this.cameraHeight, this.cameraZangle-50)
 
             const camPos = camVect.applyMatrix4(this.model.mesh.matrixWorld);
-            this.camera.threeCamera.position.x = camPos.x
-            this.camera.threeCamera.position.y = camPos.y
-            this.camera.threeCamera.position.z = camPos.z
-            this.camera.threeCamera.lookAt(this.model.mesh.position)
+            if (this.viewMode === 'normal'){
+                this.camera.threeCamera.position.x = camPos.x;
+                this.camera.threeCamera.position.y = camPos.y;
+                this.camera.threeCamera.position.z = camPos.z;
+                this.camera.threeCamera.lookAt(this.model.mesh.position)
+            } else {
+                this.camera.threeCamera.position.x = 0;
+                this.camera.threeCamera.position.y = 600;
+                this.camera.threeCamera.position.z = 0;
+                this.camera.threeCamera.lookAt(0,0,0);
+            }
+
+
 
         }
 
         this.firePlaces.forEach( fp => fp.update())
         // koniec statystyk
         this.stats.end()
-
+        if (this.laser) {
+            this.laser.update()
+            // console.log("LASER REFRESH")
+        }
         requestAnimationFrame(this.render.bind(this));
 
     }
-
+    enableShadows(){
+     this.renderer.threeRenderer.shadowMap.enabled = true
+     this.renderer.threeRenderer.shadowMap.type = three__WEBPACK_IMPORTED_MODULE_17__.PCFSoftShadowMap;
+        console.log(this.scene.children)
+     this.scene.children.forEach( ch => {
+         ch.castShadow = true
+         if (ch.children) ch.children.forEach(c => c.castShadow = true)
+     })
+    }
 }
 
 
@@ -51404,7 +51573,12 @@ class Model {
                     morphTargets: true // animowanie materiału modelu
                 }))
                 this.mesh.position.set(0,0,0);
+                this.mesh.castShadow = true;
+                this.mesh.receiveShadow = true;
                 this.scene.add(this.mesh);
+
+
+
                 console.log(this.geometry.animations) // tu powinny być widoczne animacje
 
             },
@@ -51413,9 +51587,9 @@ class Model {
 
     }
 
-//     unload() {
-//         this.scene.remove(this.mesh); // ew funkcja do usunięcia modelu ze sceny
-//     }
+    unload() {
+        this.scene.remove(this.mesh); // ew funkcja do usunięcia modelu ze sceny
+    }
 }
 
 
@@ -51639,17 +51813,32 @@ class Roof {
             transparent: false,
             opacity: 0.8,
         });
+        this.elements = []
         for (let x = 0; x < 10; x++) {
             for (let z = 0; z < 10; z++) {
                 this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
                 this.mesh.position.set(-500+50+x*50*2,150,-500+50+z*50*2);
                 this.scene.add(this.mesh)
+                this.elements.push(this.mesh);
             }
         }
 
     }
     update(){
         //    NONE FOR NOW
+    }
+
+    makeInvisible(){
+        this.elements.forEach( element =>{
+            element.material.transparent = true ;
+            element.material.opacity = 0;
+        })
+    }
+    makeVisible(){
+        this.elements.forEach( element =>{
+            element.material.transparent = false ;
+            element.material.opacity = 1;
+        })
     }
 }
 
@@ -51688,8 +51877,9 @@ class Torch{
 
         // this.lightHelper = new PointLightHelper(this.light)
         // this.lightHelper = new DirectionalLightHelper( this.light, 5 );
-        this.lightHelper = new three__WEBPACK_IMPORTED_MODULE_0__.SpotLightHelper(this.light)
 
+        this.lightHelper = new three__WEBPACK_IMPORTED_MODULE_0__.SpotLightHelper(this.light)
+        this.light.castShadow = true
         scene.add(this.lightHelper)
         this.light.position.set(0, 0, 0); // ma być w pozycji 0,0,0 kontenera - nie zmieniamy
         // this.light.target = scene;
@@ -51705,7 +51895,7 @@ class Torch{
             opacity: 0.5,
             vertexColors: true
         });
-        const sphere = new three__WEBPACK_IMPORTED_MODULE_0__.SphereGeometry( 50, 32, 32 );
+        const sphere = new three__WEBPACK_IMPORTED_MODULE_0__.SphereGeometry( 10, 32, 32 );
         //utworzenie widzialnego elementu reprezentującego światło (mały sześcian, kula, czworościan foremny, do wyboru)
         this.mesh = new three__WEBPACK_IMPORTED_MODULE_0__.Mesh(sphere,lightMaterial)
 
@@ -51837,8 +52027,10 @@ class Wall {
         });
 
         this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Mesh(this.geometry, this.material);
+        this.mesh.name ="wall"
 
         this.mesh.castShadow = true;
+        this.mesh.receiveShadow = true;
 
         this.positionWall(grid_x,grid_y,grid_z);
         this.scene.add(this.mesh)

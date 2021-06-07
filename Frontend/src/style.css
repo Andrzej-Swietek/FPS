@@ -51,7 +51,7 @@ h1 {
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);
 }
 .settings .slider-element-container {
-  margin: 1rem;
+  margin: 0.8rem;
   padding: 1rem;
   display: flex;
   align-items: center;
@@ -72,7 +72,7 @@ h1 {
   border-left: 3px solid black;
   height: 20vh;
   background: #2e2d2d;
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   color: azure;
 }
 .settings .checkbox-element-container div {
@@ -101,7 +101,7 @@ h1 {
   border-left: 3px solid black;
   height: 20vh;
   background: #2e2d2d;
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   color: azure;
 }
 .settings .fire-settings-element-container div {
@@ -263,9 +263,17 @@ input[type=range]:focus {
   width: 100%;
   background-color: #f68989;
 }
+.personStats div .hp::after {
+  content: "HP";
+  position: absolute;
+  left: 50%;
+  font-size: 2rem;
+  z-index: 20;
+  color: azure;
+}
 .personStats div .hp .hp-progress {
   background-color: #d72121;
-  width: 50%;
+  width: 100%;
   height: 100%;
   z-index: 10;
   border-radius: 0 40px 40px 0;
@@ -275,9 +283,17 @@ input[type=range]:focus {
   width: 100%;
   background-color: #7f86d9;
 }
+.personStats div .mp::after {
+  content: "MP";
+  position: absolute;
+  left: 50%;
+  font-size: 2rem;
+  z-index: 20;
+  color: azure;
+}
 .personStats div .mp .mp-progress {
   background-color: #2133d7;
-  width: 50%;
+  width: 75%;
   height: 100%;
   z-index: 10;
   border-radius: 0 40px 40px 0;
@@ -286,6 +302,14 @@ input[type=range]:focus {
   height: 20%;
   width: 100%;
   background-color: #5e3c79;
+}
+.personStats div .exp::after {
+  content: "EXP";
+  position: absolute;
+  left: 50%;
+  font-size: 2rem;
+  z-index: 20;
+  color: azure;
 }
 .personStats div .exp .exp-progress {
   background-color: #560d83;

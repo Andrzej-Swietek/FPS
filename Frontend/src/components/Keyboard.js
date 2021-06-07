@@ -9,7 +9,8 @@ const KEYS = {
     "w": 87,
     "s": 83,
     "a": 65,
-    "d": 68
+    "d": 68,
+    "spacebar":32
 };
 
 export default class Keyboard {
@@ -70,6 +71,10 @@ export default class Keyboard {
             case KEYS.s:
                 Config.moveBackward = true;
                 this.animation.playAnim("crwalk")
+                break;
+            case KEYS.spacebar:
+                Config.attack = true;
+                this.animation.playAnim("crattak")
                 break;
         }
 

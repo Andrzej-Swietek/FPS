@@ -14,7 +14,8 @@ export default class Floor {
         console.log("FLOOR",texture)
         this.scene = scene;
         this.geometry = new BoxGeometry(100,1,100);
-        this.material = new MeshBasicMaterial({
+        // this.material = new MeshBasicMaterial({
+        this.material = new MeshPhongMaterial({
             side: DoubleSide,
             map: new TextureLoader().load(texture),
             transparent: false,
@@ -24,6 +25,8 @@ export default class Floor {
             for (let z = 0; z < 10; z++) {
                 this.mesh = new Mesh(this.geometry, this.material);
                 this.mesh.position.set(-500+50+x*50*2,-25,-500+50+z*50*2);
+                this.mesh.castShadow = true;
+                this.mesh.receiveShadow = true;
                 this.scene.add(this.mesh)
             }
         }

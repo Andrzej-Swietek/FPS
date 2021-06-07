@@ -29,8 +29,9 @@ export default class Torch{
 
         // this.lightHelper = new PointLightHelper(this.light)
         // this.lightHelper = new DirectionalLightHelper( this.light, 5 );
-        this.lightHelper = new SpotLightHelper(this.light)
 
+        this.lightHelper = new SpotLightHelper(this.light)
+        this.light.castShadow = true
         scene.add(this.lightHelper)
         this.light.position.set(0, 0, 0); // ma być w pozycji 0,0,0 kontenera - nie zmieniamy
         // this.light.target = scene;
@@ -46,7 +47,7 @@ export default class Torch{
             opacity: 0.5,
             vertexColors: true
         });
-        const sphere = new SphereGeometry( 50, 32, 32 );
+        const sphere = new SphereGeometry( 10, 32, 32 );
         //utworzenie widzialnego elementu reprezentującego światło (mały sześcian, kula, czworościan foremny, do wyboru)
         this.mesh = new Mesh(sphere,lightMaterial)
 

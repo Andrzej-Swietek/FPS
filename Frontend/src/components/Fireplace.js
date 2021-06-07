@@ -35,19 +35,21 @@ export default class Fireplace extends Object3D {
         document.querySelector('#fire-size').addEventListener('input', (e)=>{
             let factor = e.target.value / 100 * 2
             // this.scale.set(factor * 1,factor * 1,factor * 1)
-            this.scale.y = factor;
-
+            // this.scale.y = factor;
+            this.particles.forEach(p=> p.scale.y=factor*10)
             // prev = this.position.x
         })
 
         document.querySelector('#fire-width-x').addEventListener('input', (e)=>{
             let factor = e.target.value / 100 * 2
-            this.scale.x = factor;
+            // this.scale.x = factor;
+            this.particles.forEach(p=> p.scale.x=factor*10)
         })
 
         document.querySelector('#fire-width-z').addEventListener('input', (e)=>{
             let factor = e.target.value / 100 * 2
-            this.scale.z = factor;
+            // this.scale.z = factor;
+            this.particles.forEach(p=> p.scale.z=factor*10)
         })
     }
 

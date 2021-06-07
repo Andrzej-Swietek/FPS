@@ -3,7 +3,7 @@ import {
     Clock,
     Vector3,
     GridHelper,
-    PCFSoftShadowMap
+    PCFSoftShadowMap, Points, BufferAttribute, AdditiveBlending, TextureLoader, BufferGeometry, PointsMaterial
 } from 'three';
 import Model from "./Model"
 import Keyboard from "./Keyboard"
@@ -25,6 +25,8 @@ import Roof from "./Roof";
 import Enemy from "./Enemy";
 import Fireplace from "./Fireplace";
 import Collision from "./Collision";
+import Laser from "./Laser";
+import fireTex from "./assets/fire.png"
 export default class Main {
 
     constructor(container) {
@@ -40,8 +42,10 @@ export default class Main {
         this.cameraXangle = 100;
         this.cameraZangle = 100;
         this.firePlaces = [];
-        this.enemies = []
+        this.enemies = [];
         this.walls = [];
+        this.viewMode = "normal";
+        this.collisionStopper = 1;
         // ==================== LIGHT ====================
 
         // const light = new THREE.PointLight( 0xff0000, 1, 100 );
@@ -131,6 +135,7 @@ export default class Main {
             console.log("%c CAMERA HEIGHT: "+newHeight, 'color: orange');
             this.cameraHeight = newHeight;
         });
+
         document.getElementById('camera-x-angle').addEventListener('input', ()=> {
             let newXangle = parseInt(document.getElementById('camera-x-angle').value)
             console.log("%c CAMERA X Angle: "+newXangle, 'color: red');
@@ -143,6 +148,96 @@ export default class Main {
             this.cameraZangle = newZangle;
         });
 
+        document.getElementById('view-from-top').addEventListener('input', ()=>{
+            if (this.viewMode === 'normal'){
+                this.viewMode = 'top';
+                this.roof.makeInvisible()
+            }
+            else {
+                this.viewMode = 'normal';
+                this.roof.makeVisible()
+            }
+            console.log(this.viewMode, document.getElementById('view-from-top').value )
+        })
+
+        document.getElementById('shadows').addEventListener('input',()=>{
+            this.enableShadows();
+        })
+
+        document.body.onkeydown = (e)=> {
+            let isOnStage = false;
+            this.scene.children.forEach(m=> {
+                if (m.name === 'laser') isOnStage = true
+            })
+            if (e.keyCode === 32 && !isOnStage){
+                // this.laser = new Laser(this.scene);
+                // console.log(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z);
+                // let playerPosVector = new Vector3(this.model.mesh.position.x, this.model.mesh.position.y, this.model.mesh.position.z);
+                // // let destinationVect = playerPosVect.clone().add(new Vector3(100,0,0));
+                // let destinationVector = new Vector3(this.model.mesh.position.x+100,this.model.mesh.position.y,this.model.mesh.position.z);
+                //
+                // // console.log( destinationVect ,playerPosVect);
+                // this.laser.shoot(  playerPosVector, destinationVector );
+                // // this.laser.shoot( new Vector3(100,0,0), new Vector3(300,0,0))
+                this.l1.visible = true;
+                setTimeout( ()=>{
+                    // this.laser.delete();
+                    // this.laser.deleteAll();
+                    this.l1.visible = false;
+                }, 1000 )
+            }
+        }
+
+
+        // =============== Laser ===============
+        this.verticesArray1 = new Float32Array(1000 * 3)
+        this.particlesGeometry1 = new BufferGeometry()
+
+        this.particleMaterial1 = new PointsMaterial({
+            // color: 0x3ae03a,
+            // color: 0xff00ff,
+            color: 0x6622ee,
+            depthWrite: false,
+            transparent: true,
+            size: 20,
+            map: new TextureLoader().load(fireTex),
+            blending: AdditiveBlending
+        })
+
+
+
+        const v1 = new Vector3(0, 0, 0)
+        const v2 = new Vector3(200, 0, 0)
+        const subV = v2.clone().sub(v1.clone())
+
+        this.particlesCount1 = 1000
+        const stepV = subV.divideScalar(this.particlesCount1) // particlesCount - przewidywana ilość cząsteczek na linii a-b
+        this.stepV = stepV;
+
+        function laser(particlesCount, verticesArray, particlesGeometry, particleMaterial,scene){
+
+            for (let i = 0; i < particlesCount; i+=3) {
+
+                verticesArray[i] = i*stepV.x
+                verticesArray[i+1] = 0
+                verticesArray[i+2] = i*stepV.z
+
+            }
+            // console.log(verticesArray)
+            // poniższa linia przypisuje geometrii naszą tablicę punktów
+
+            particlesGeometry.setAttribute("position", new BufferAttribute(verticesArray, 3))
+
+            // z geometrii jak zawsze powstaje mesh, złożony
+            // z geometrii i materiału typu Points
+
+            const mesh1 = new Points(particlesGeometry,particleMaterial)
+            scene.add(mesh1)
+            return mesh1;
+        }
+
+        this.l1 = laser(this.particlesCount1,this.verticesArray1,this.particlesGeometry1,this.particleMaterial1,this.scene)
+        this.l1.visible = false;
     }
 
 
@@ -180,6 +275,8 @@ export default class Main {
 
         })
         console.log(this.walls)
+
+
     }
     async addColliders(){
         return new Promise( resolve => {
@@ -189,12 +286,12 @@ export default class Main {
 
     }
 
-     createEnemy(field){
+    createEnemy(field){
             this.enemyManager =  new LoadingManager();
             this.enemy = new Enemy(this.scene, this.enemyManager);
             // ogre.load("./dist/assets/ogre.md2",field.x,0,field.z);
             // ogre.load("./dist/assets/knight.md2",field.x,0,field.z);
-            this.enemy.load("./dist/assets/boba.md2",field.x,0,field.z);
+            this.enemy.load("./dist/assets/knight.md2",field.x,0,field.z);
             this.enemyManager.onProgress = (item, loaded, total) => {
                 console.log(`progress ${item}: ${loaded} ${total}`);
             };
@@ -203,10 +300,11 @@ export default class Main {
                 console.log("ENEMY LOADED!!!")
                 let enemyAnimation = new Animation(this.enemy.mesh)
                 enemyAnimation.playAnim("crwalk")
+                this.enemies.push( { model: this.enemy, anim:enemyAnimation } )
                 // this.enemies.push(this.enemy)
             };
 
-        // console.log(this.enemy, this.enemies)
+        console.log(this.enemy, this.enemies)
     }
     render() {
 
@@ -226,20 +324,22 @@ export default class Main {
 
         // obsługa ruch modelu dopiero kiedy jest załadowany, można tą część umieścić w module Keyboard
         // tworząc w nim no prunkcję update() i wywoływać ją poniżej
-
-        // if(this.enemies[0].obj.mesh) this.enemies[0].anim.playAnim("crwalk")
+        // console.log(this.enemies)
+        if(this.enemies[0])  this.enemies[0].anim.playAnim("crwalk")
         if (this.model.mesh) {
-//
+            this.l1.position.set(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z) //TODO: TEST LASER
             if ( !this.playerWallCollision )
                 this.playerWallCollision = new Collision(this.model.mesh, this.walls)
 
 
             if (this.walls.length > 0){
                 this.playerWallCollision.update((element)=>{
-                    if (element.distance < 5){
+                    if (element.distance < 100){
                         console.log(element.distance, element.object)
                         console.log("%c INTERACTED WITH: "+element,'color: purple')
+                        this.collisionStopper = 0
                     }
+                    else this.collisionStopper = 1
 
                 })
 
@@ -247,12 +347,14 @@ export default class Main {
 
             if (Config.rotateLeft) {
                 this.model.mesh.rotation.y += 0.05
+                this.l1.rotation.y += 0.05
             }
             if (Config.rotateRight) {
                 this.model.mesh.rotation.y -= 0.05
+                this.l1.rotation.y -= 0.05
             }
             if (Config.moveForward) {
-                this.model.mesh.translateX(3);
+                this.model.mesh.translateX(3*this.collisionStopper);
             }
             if (Config.moveBackward) {
                 this.model.mesh.translateX(-3)
@@ -261,20 +363,40 @@ export default class Main {
             const camVect = new Vector3(-this.cameraXangle, this.cameraHeight, this.cameraZangle-50)
 
             const camPos = camVect.applyMatrix4(this.model.mesh.matrixWorld);
-            this.camera.threeCamera.position.x = camPos.x
-            this.camera.threeCamera.position.y = camPos.y
-            this.camera.threeCamera.position.z = camPos.z
-            this.camera.threeCamera.lookAt(this.model.mesh.position)
+            if (this.viewMode === 'normal'){
+                this.camera.threeCamera.position.x = camPos.x;
+                this.camera.threeCamera.position.y = camPos.y;
+                this.camera.threeCamera.position.z = camPos.z;
+                this.camera.threeCamera.lookAt(this.model.mesh.position)
+            } else {
+                this.camera.threeCamera.position.x = 0;
+                this.camera.threeCamera.position.y = 600;
+                this.camera.threeCamera.position.z = 0;
+                this.camera.threeCamera.lookAt(0,0,0);
+            }
+
+
 
         }
 
         this.firePlaces.forEach( fp => fp.update())
         // koniec statystyk
         this.stats.end()
-
+        if (this.laser) {
+            this.laser.update()
+            // console.log("LASER REFRESH")
+        }
         requestAnimationFrame(this.render.bind(this));
 
     }
-
+    enableShadows(){
+     this.renderer.threeRenderer.shadowMap.enabled = true
+     this.renderer.threeRenderer.shadowMap.type = PCFSoftShadowMap;
+        console.log(this.scene.children)
+     this.scene.children.forEach( ch => {
+         ch.castShadow = true
+         if (ch.children) ch.children.forEach(c => c.castShadow = true)
+     })
+    }
 }
 

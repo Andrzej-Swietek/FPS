@@ -31,7 +31,12 @@ export default class Model {
                     morphTargets: true // animowanie materiału modelu
                 }))
                 this.mesh.position.set(0,0,0);
+                this.mesh.castShadow = true;
+                this.mesh.receiveShadow = true;
                 this.scene.add(this.mesh);
+
+
+
                 console.log(this.geometry.animations) // tu powinny być widoczne animacje
 
             },
@@ -40,7 +45,7 @@ export default class Model {
 
     }
 
-//     unload() {
-//         this.scene.remove(this.mesh); // ew funkcja do usunięcia modelu ze sceny
-//     }
+    unload() {
+        this.scene.remove(this.mesh); // ew funkcja do usunięcia modelu ze sceny
+    }
 }

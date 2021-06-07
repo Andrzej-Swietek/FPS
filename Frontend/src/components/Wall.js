@@ -31,8 +31,10 @@ export default class Wall {
         });
 
         this.mesh = new Mesh(this.geometry, this.material);
+        this.mesh.name ="wall"
 
         this.mesh.castShadow = true;
+        this.mesh.receiveShadow = true;
 
         this.positionWall(grid_x,grid_y,grid_z);
         this.scene.add(this.mesh)

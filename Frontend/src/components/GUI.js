@@ -1,6 +1,8 @@
 export default class GUI {
     constructor() {
 
+        // ======================= AVATAR + HP + MP + EXP =======================
+
         let personStats = document.createElement('div');
         personStats.classList.add("personStats");
         let avatar = document.createElement('img');
@@ -18,6 +20,8 @@ export default class GUI {
         personStats.append(cont);
         document.body.append(personStats);
 
+
+        // ========================= SIDEBAR OPTIONS =========================
 
         let sidebar = document.createElement('div');
         sidebar.id="sidebar";
@@ -46,9 +50,14 @@ export default class GUI {
 
         document.body.append(sidebar);
 
+
+
+        // ========================= SETTINGS OPTIONS =========================
+
         let settings = document.createElement('div');
         settings.classList.add('settings')
 
+        // ========= CAMERA SETTINGS =========
         let sliders = ['Camera height', 'Camera X angle','Distance form person', 'Camera view angle Y', 'Camera  fov', 'Light intensity'];
         let chbxs = ['Shadows', 'View From Top', 'Camera behind player'];
         sliders.forEach( silderTitle => {
@@ -84,6 +93,7 @@ export default class GUI {
             settings.append(div)
         })
 
+        // ========= FIREPLACE SETTINGS =========
         let fireplaceSettings = document.createElement('div');
         fireplaceSettings.classList.add('fire-settings-element-container');
 
@@ -104,6 +114,23 @@ export default class GUI {
         fireplaceSettings.append(row3)
         settings.append(fireplaceSettings)
 
+
+        // ========= LASER SETTINGS =========
+        let laserSettings = document.createElement('div');
+        laserSettings.classList.add('fire-settings-element-container');
+        let row1_laser = document.createElement('div');
+        this.createDescription(row1_laser,'Laser Size')
+        this.createInput(row1_laser, 'Laser Size',1,100,50);
+
+        let row2_laser = document.createElement('div');
+        this.createDescription(row2_laser,'Laser Wiggle')
+        this.createInput(row2_laser, 'Laser Wiggle',1,100,50);
+
+        laserSettings.append(row1_laser);
+        laserSettings.append(row2_laser);
+        settings.append(laserSettings)
+
+        // ========= CHECKBOXES SETTINGS =========
         let checkboxes = document.createElement('div');
         checkboxes.classList.add('checkbox-element-container');
 

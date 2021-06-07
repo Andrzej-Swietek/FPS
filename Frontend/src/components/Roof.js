@@ -20,16 +20,31 @@ export default class Roof {
             transparent: false,
             opacity: 0.8,
         });
+        this.elements = []
         for (let x = 0; x < 10; x++) {
             for (let z = 0; z < 10; z++) {
                 this.mesh = new Mesh(this.geometry, this.material);
                 this.mesh.position.set(-500+50+x*50*2,150,-500+50+z*50*2);
                 this.scene.add(this.mesh)
+                this.elements.push(this.mesh);
             }
         }
 
     }
     update(){
         //    NONE FOR NOW
+    }
+
+    makeInvisible(){
+        this.elements.forEach( element =>{
+            element.material.transparent = true ;
+            element.material.opacity = 0;
+        })
+    }
+    makeVisible(){
+        this.elements.forEach( element =>{
+            element.material.transparent = false ;
+            element.material.opacity = 1;
+        })
     }
 }

@@ -3,8 +3,8 @@ import {Mesh, TextureLoader, MeshPhongMaterial, PointLight, AmbientLight, Loadin
 
 
 // import marioTex from "./assets/ogre/Ogre.png"
-//import marioTex from "./assets/knight/bs.jpg"
-import marioTex from "./assets/bobafett/prototype_fett.png"
+import marioTex from "./assets/knight/bs.jpg"
+// import marioTex from "./assets/bobafett/prototype_fett.png"
 import Animation from "./Animation";
 
 
