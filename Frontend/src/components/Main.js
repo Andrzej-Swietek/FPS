@@ -344,42 +344,27 @@ export default class Main {
         // if(this.enemies[0])  this.enemies[0].anim.playAnim("crwalk")
         if (this.model.mesh) {
             // console.log(this.model.mesh)
+            this.model.box.position.set(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z);
+
             this.l1.position.set(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z)
             if ( !this.playerWallCollision )
                 this.playerWallCollision = new Collision(this.model.mesh, this.walls)
 
-            // if ( !this.playerEnemyCollision && this.enemies.length >=1)
-            //     this.playerEnemyCollision = new Collision(this.model.mesh, this.enemies)
+            if ( !this.playerEnemyCollision && this.enemies.length >=1)
+                this.playerEnemyCollision = new Collision(this.model.mesh, this.enemies)
 
 
-            if (this.walls.length > 0){
-                this.playerWallCollision.update((element)=>{
+
+
+            if ( this.enemies.length >= 1 ){
+                this.playerEnemyCollision.update(element =>{
                     if (element.distance < 100){
-                        console.log(element.distance, element.object)
-                        console.log("%c INTERACTED WITH: "+element,'color: purple')
-                        this.collisionStopper = 0
+                    //    TODO play animation
+                        let index = this.enemies.indexOf(element)
+                        this.enemies[index].anim.playAnim("crattak")
                     }
-                    else this.collisionStopper = 1
-
                 })
-                    // this.walls.forEach( w=>{
-                    //
-                    //     if (this.collision(this.model.mesh, w.mesh)){
-                    //         this.collisionStopper = 0
-                    //     } else this.collisionStopper = 1
-                    // })
-
             }
-
-            // if ( this.enemies.length >= 1 ){
-            //     this.playerEnemyCollision.update(element =>{
-            //         if (element.distance < 100){
-            //         //    TODO play animation
-            //             let index = this.enemies.indexOf(element)
-            //             this.enemies[index].anim.playAnim("crattak")
-            //         }
-            //     })
-            // }
 
 
             if (Config.rotateLeft) {
@@ -391,7 +376,9 @@ export default class Main {
                 this.l1.rotation.y -= 0.05
             }
             if (Config.moveForward) {
-                this.model.mesh.translateX(3*this.collisionStopper);
+                // console.log(this.collisionStopper,this.checkIfWallCollision())
+                if (this.checkIfWallCollision() === 1)
+                    this.model.mesh.translateX(3*this.checkIfWallCollision());
             }
             if (Config.moveBackward) {
                 this.model.mesh.translateX(-3)
@@ -427,7 +414,7 @@ export default class Main {
 
     }
     enableShadows(){
-     this.renderer.threeRenderer.shadowMap.enabled = true
+     this.renderer.threeRenderer.shadowMap.enabled = false
      this.renderer.threeRenderer.shadowMap.type = PCFSoftShadowMap;
         console.log(this.scene.children)
      this.scene.children.forEach( ch => {
@@ -437,25 +424,14 @@ export default class Main {
     }
     collision(model, d) {
         // console.log(a)
-        // let b1 = a.position.y - a.geometry.parameters.height / 2;
-        // let t1 = a.position.y + a.geometry.parameters.height / 2;
-        // let r1 = a.position.x + a.geometry.parameters.width / 2;
-        // let l1 = a.position.x - a.geometry.parameters.width / 2;
-        // let f1 = a.position.z - a.geometry.parameters.depth / 2;
-        // let B1 = a.position.z + a.geometry.parameters.depth / 2;
-        // let b2 = d.position.y - d.geometry.parameters.height / 2;
-        // let t2 = d.position.y + d.geometry.parameters.height / 2;
-        // let r2 = d.position.x + d.geometry.parameters.width / 2;
-        // let l2 = d.position.x - d.geometry.parameters.width / 2;
-        // let f2 = d.position.z - d.geometry.parameters.depth / 2;
-        // let B2 = d.position.z + d.geometry.parameters.depth / 2;
+
         // console.log( model.box.min, model.box.max, model.box.getSize() );
-        let b1 = model.position.y - model.box.geometry.parameters.height / 2;
-        let t1 = model.position.y + model.box.geometry.parameters.height / 2;
-        let r1 = model.position.x + model.box.geometry.parameters.width / 2;
-        let l1 = model.position.x - model.box.geometry.parameters.width / 2;
-        let f1 = model.position.z - model.box.geometry.parameters.depth / 2;
-        let B1 = model.position.z + model.box.geometry.parameters.depth / 2;
+        let b1 = model.position.y - model.geometry.parameters.height / 2;
+        let t1 = model.position.y + model.geometry.parameters.height / 2;
+        let r1 = model.position.x + model.geometry.parameters.width / 2;
+        let l1 = model.position.x - model.geometry.parameters.width / 2;
+        let f1 = model.position.z - model.geometry.parameters.depth / 2;
+        let B1 = model.position.z + model.geometry.parameters.depth / 2;
         let b2 = d.position.y - d.geometry.parameters.height / 2;
         let t2 = d.position.y + d.geometry.parameters.height / 2;
         let r2 = d.position.x + d.geometry.parameters.width / 2;
@@ -466,6 +442,42 @@ export default class Main {
             return false;
         }
         return true;
+    }
+    checkIfWallCollision(){
+        let mnoznik = 1;
+        if (this.walls.length > 0){
+            // this.playerWallCollision.update((element)=>{
+            //     if (element.distance < 100){
+            //         console.log(element.distance, element.object)
+            //         console.log("%c INTERACTED WITH: "+element,'color: purple')
+            //         this.collisionStopper = 0
+            //     }
+            //     else this.collisionStopper = 1
+            //
+            // })
+            // for (const w in this.walls) {
+            //     if (this.collision(this.model.box, w.mesh)){
+            //         console.log("%c INTERACTED WITH: "+w.mesh,'color: purple')
+            //         this.collisionStopper = 0;
+            //         console.log(this.collisionStopper);
+            //         return 0;
+            //     }
+            // }
+            this.walls.forEach( w=>{
+
+                if (this.collision(this.model.box, w.mesh)){
+                    // console.log("%c INTERACTED WITH: "+w.mesh,'color: purple')
+
+                    mnoznik = 0
+                }
+            })
+
+            // this.collisionStopper = 1;
+            return mnoznik;
+
+        }
+        return 1;
+
     }
 }
 

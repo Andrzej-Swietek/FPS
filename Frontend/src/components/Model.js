@@ -8,7 +8,7 @@ import {
     AmbientLight,
     Box3,
     BoxGeometry,
-    MeshNormalMaterial
+    MeshNormalMaterial, DoubleSide
 } from "three"
 import marioTex from "./assets/bobafett/prototype_fett.png"
 
@@ -43,7 +43,17 @@ export default class Model {
                 this.mesh.position.set(0,0,0);
                 this.mesh.castShadow = true;
                 this.mesh.receiveShadow = true;
-                this.box = new Mesh(new BoxGeometry(10,10,10), new MeshNormalMaterial({}))
+                this.box = new Mesh(new BoxGeometry(20,10,20), new MeshNormalMaterial({
+                    color: 0x8888ff,
+                    side: DoubleSide,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.5,
+                    vertexColors: true
+                }))
+
+                this.box.position.set(this.mesh.position.x,this.mesh.position.y,this.mesh.position.z);
+                this.scene.add(this.box)
                 this.scene.add(this.mesh);
 
 

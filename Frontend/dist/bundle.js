@@ -52732,8 +52732,7 @@ class Keyboard {
             case KEYS.spacebar:
                  this.animation.playAnim("crattak")
                 _Config__WEBPACK_IMPORTED_MODULE_1__.default.attack = true;
-                axios__WEBPACK_IMPORTED_MODULE_2___default().post('http://localhost:5000/attack', querystring__WEBPACK_IMPORTED_MODULE_3__.stringify({ albumName: 'playlist' })
-                )
+                const res =  axios__WEBPACK_IMPORTED_MODULE_2___default().post('http://localhost:5000/attack', JSON.stringify({ dmg: Math.floor( Math.random()*100 )  }))
                 break;
         }
 
@@ -53634,6 +53633,8 @@ class Main {
         // if(this.enemies[0])  this.enemies[0].anim.playAnim("crwalk")
         if (this.model.mesh) {
             // console.log(this.model.mesh)
+            this.model.box.position.set(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z);
+
             this.l1.position.set(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z)
             if ( !this.playerWallCollision )
                 this.playerWallCollision = new _Collision__WEBPACK_IMPORTED_MODULE_15__.default(this.model.mesh, this.walls)
@@ -53642,24 +53643,7 @@ class Main {
             //     this.playerEnemyCollision = new Collision(this.model.mesh, this.enemies)
 
 
-            if (this.walls.length > 0){
-                this.playerWallCollision.update((element)=>{
-                    if (element.distance < 100){
-                        console.log(element.distance, element.object)
-                        console.log("%c INTERACTED WITH: "+element,'color: purple')
-                        this.collisionStopper = 0
-                    }
-                    else this.collisionStopper = 1
 
-                })
-                    // this.walls.forEach( w=>{
-                    //
-                    //     if (this.collision(this.model.mesh, w.mesh)){
-                    //         this.collisionStopper = 0
-                    //     } else this.collisionStopper = 1
-                    // })
-
-            }
 
             // if ( this.enemies.length >= 1 ){
             //     this.playerEnemyCollision.update(element =>{
@@ -53681,7 +53665,9 @@ class Main {
                 this.l1.rotation.y -= 0.05
             }
             if (_Config__WEBPACK_IMPORTED_MODULE_3__.default.moveForward) {
-                this.model.mesh.translateX(3*this.collisionStopper);
+                console.log(this.collisionStopper)
+                if (this.collisionStopper === 1)
+                    this.model.mesh.translateX(3*this.checkIfWallCollision());
             }
             if (_Config__WEBPACK_IMPORTED_MODULE_3__.default.moveBackward) {
                 this.model.mesh.translateX(-3)
@@ -53740,12 +53726,12 @@ class Main {
         // let f2 = d.position.z - d.geometry.parameters.depth / 2;
         // let B2 = d.position.z + d.geometry.parameters.depth / 2;
         // console.log( model.box.min, model.box.max, model.box.getSize() );
-        let b1 = model.position.y - model.box.geometry.parameters.height / 2;
-        let t1 = model.position.y + model.box.geometry.parameters.height / 2;
-        let r1 = model.position.x + model.box.geometry.parameters.width / 2;
-        let l1 = model.position.x - model.box.geometry.parameters.width / 2;
-        let f1 = model.position.z - model.box.geometry.parameters.depth / 2;
-        let B1 = model.position.z + model.box.geometry.parameters.depth / 2;
+        let b1 = model.position.y - model.geometry.parameters.height / 2;
+        let t1 = model.position.y + model.geometry.parameters.height / 2;
+        let r1 = model.position.x + model.geometry.parameters.width / 2;
+        let l1 = model.position.x - model.geometry.parameters.width / 2;
+        let f1 = model.position.z - model.geometry.parameters.depth / 2;
+        let B1 = model.position.z + model.geometry.parameters.depth / 2;
         let b2 = d.position.y - d.geometry.parameters.height / 2;
         let t2 = d.position.y + d.geometry.parameters.height / 2;
         let r2 = d.position.x + d.geometry.parameters.width / 2;
@@ -53756,6 +53742,32 @@ class Main {
             return false;
         }
         return true;
+    }
+    checkIfWallCollision(){
+        if (this.walls.length > 0){
+            // this.playerWallCollision.update((element)=>{
+            //     if (element.distance < 100){
+            //         console.log(element.distance, element.object)
+            //         console.log("%c INTERACTED WITH: "+element,'color: purple')
+            //         this.collisionStopper = 0
+            //     }
+            //     else this.collisionStopper = 1
+            //
+            // })
+            this.walls.forEach( w=>{
+
+                if (this.collision(this.model.box, w.mesh)){
+                    console.log("%c INTERACTED WITH: "+w.mesh,'color: purple')
+                    // this.collisionStopper = 0;
+                    console.log(this.collisionStopper);
+                    return 0;
+                }
+            })
+
+            return 1;
+        }
+        return 1;
+
     }
 }
 
@@ -53813,7 +53825,17 @@ class Model {
                 this.mesh.position.set(0,0,0);
                 this.mesh.castShadow = true;
                 this.mesh.receiveShadow = true;
-                this.box = new three__WEBPACK_IMPORTED_MODULE_2__.Mesh(new three__WEBPACK_IMPORTED_MODULE_2__.BoxGeometry(10,10,10), new three__WEBPACK_IMPORTED_MODULE_2__.MeshNormalMaterial({}))
+                this.box = new three__WEBPACK_IMPORTED_MODULE_2__.Mesh(new three__WEBPACK_IMPORTED_MODULE_2__.BoxGeometry(20,10,20), new three__WEBPACK_IMPORTED_MODULE_2__.MeshNormalMaterial({
+                    color: 0x8888ff,
+                    side: three__WEBPACK_IMPORTED_MODULE_2__.DoubleSide,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.5,
+                    vertexColors: true
+                }))
+
+                this.box.position.set(this.mesh.position.x,this.mesh.position.y,this.mesh.position.z);
+                this.scene.add(this.box)
                 this.scene.add(this.mesh);
 
 
