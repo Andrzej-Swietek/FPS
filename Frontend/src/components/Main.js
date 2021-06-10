@@ -110,7 +110,7 @@ export default class Main {
 
 
         // ==================== EXAMPLE LEVEL ====================
-        this.level = [{"id":0,"x":1,"y":0,"z":1,"type":"wall"},{"id":1,"x":8,"y":0,"z":1,"type":"wall"},{"id":2,"x":8,"y":0,"z":8,"type":"wall"},{"id":3,"x":1,"y":0,"z":8,"type":"wall"},{"id":4,"x":1,"y":0,"z":7,"type":"wall"},{"id":5,"x":1,"y":0,"z":6,"type":"wall"},{"id":6,"x":1,"y":0,"z":2,"type":"wall"},{"id":7,"x":1,"y":0,"z":3,"type":"wall"},{"id":8,"x":2,"y":0,"z":8,"type":"wall"},{"id":9,"x":3,"y":0,"z":8,"type":"wall"},{"id":10,"x":6,"y":0,"z":8,"type":"wall"},{"id":11,"x":7,"y":0,"z":8,"type":"wall"},{"id":12,"x":8,"y":0,"z":7,"type":"wall"},{"id":13,"x":8,"y":0,"z":6,"type":"wall"},{"id":14,"x":8,"y":0,"z":2,"type":"wall"},{"id":15,"x":8,"y":0,"z":3,"type":"wall"},{"id":16,"x":7,"y":0,"z":1,"type":"wall"},{"id":17,"x":6,"y":0,"z":1,"type":"wall"},{"id":18,"x":2,"y":0,"z":1,"type":"wall"},{"id":19,"x":3,"y":0,"z":1,"type":"wall"},{"id":20,"x":2,"y":0,"z":2,"type":"light"},{"id":21,"x":2,"y":0,"z":7,"type":"light"},{"id":22,"x":7,"y":0,"z":7,"type":"light"},{"id":23,"x":7,"y":0,"z":2,"type":"light"},{"id":24,"x":4,"y":0,"z":4,"type":"treasure"},{"id":25,"x":5,"y":0,"z":4,"type":"treasure"},{"id":26,"x":5,"y":0,"z":5,"type":"treasure"},{"id":27,"x":4,"y":0,"z":5,"type":"treasure"},{"id":28,"x":0,"y":0,"z":0,"type":"light"},{"id":29,"x":9,"y":0,"z":0,"type":"light"},{"id":30,"x":9,"y":0,"z":9,"type":"light"},{"id":31,"x":0,"y":0,"z":9,"type":"light"}]
+        this.level = [{"id":0,"x":2,"y":0,"z":2,"type":"light"},{"id":0,"x":1,"y":0,"z":1,"type":"wall"},{"id":1,"x":8,"y":0,"z":1,"type":"wall"},{"id":2,"x":8,"y":0,"z":8,"type":"wall"},{"id":3,"x":1,"y":0,"z":8,"type":"wall"},{"id":4,"x":1,"y":0,"z":7,"type":"wall"},{"id":5,"x":1,"y":0,"z":6,"type":"wall"},{"id":6,"x":1,"y":0,"z":2,"type":"wall"},{"id":7,"x":1,"y":0,"z":3,"type":"wall"},{"id":8,"x":2,"y":0,"z":8,"type":"wall"},{"id":9,"x":3,"y":0,"z":8,"type":"wall"},{"id":10,"x":6,"y":0,"z":8,"type":"wall"},{"id":11,"x":7,"y":0,"z":8,"type":"wall"},{"id":12,"x":8,"y":0,"z":7,"type":"wall"},{"id":13,"x":8,"y":0,"z":6,"type":"wall"},{"id":14,"x":8,"y":0,"z":2,"type":"wall"},{"id":15,"x":8,"y":0,"z":3,"type":"wall"},{"id":16,"x":7,"y":0,"z":1,"type":"wall"},{"id":17,"x":6,"y":0,"z":1,"type":"wall"},{"id":18,"x":2,"y":0,"z":1,"type":"wall"},{"id":19,"x":3,"y":0,"z":1,"type":"wall"},{"id":20,"x":2,"y":0,"z":2,"type":"light"},{"id":21,"x":2,"y":0,"z":7,"type":"light"},{"id":22,"x":7,"y":0,"z":7,"type":"light"},{"id":23,"x":7,"y":0,"z":2,"type":"light"},{"id":24,"x":4,"y":0,"z":4,"type":"treasure"},{"id":25,"x":5,"y":0,"z":4,"type":"treasure"},{"id":26,"x":5,"y":0,"z":5,"type":"treasure"},{"id":27,"x":4,"y":0,"z":5,"type":"treasure"},{"id":28,"x":0,"y":0,"z":0,"type":"light"},{"id":29,"x":9,"y":0,"z":0,"type":"light"},{"id":30,"x":9,"y":0,"z":9,"type":"light"},{"id":31,"x":0,"y":0,"z":9,"type":"light"}]
 
 
         this.floor = new Floor(this.scene);
@@ -244,8 +244,9 @@ export default class Main {
     async generateMap() {
        this.level = await this.net.getMap()
         // console.log("LV",this.level)
-
-        this.level.forEach( (field) => {
+        let couter = 0
+        this.level.forEach(  (field) => {
+            console.log(field.type)
             if (field.type === 'wall'){
 
                 let w1 = new Wall(this.scene, field.x,0,field.z);
@@ -270,7 +271,10 @@ export default class Main {
 
             } else if (field.type === 'enemy'){
                 this.createEnemy(field).then( obj =>{
-                    this.enemies[this.enemies.length] = obj
+                    this.enemies.push(obj);
+                    // this.enemies[this.enemies.length-1].anim.playAnim("stand")
+                    console.log(this.enemies)
+                    console.log(couter++);
                 } )
                 // console.log(enemy_model)
             }
@@ -289,12 +293,13 @@ export default class Main {
 
     }
 
-    createEnemy(field){
+     createEnemy(field){
         return new Promise(resolve => {
+            console.log(field)
             let enemyManager =  new LoadingManager();
+            console.log(enemyManager)
             let enemy = new Enemy(this.scene, enemyManager);
-            // ogre.load("./dist/assets/ogre.md2",field.x,0,field.z);
-            // ogre.load("./dist/assets/knight.md2",field.x,0,field.z);
+
             enemy.load("./dist/assets/knight.md2",field.x,0,field.z);
             enemyManager.onProgress = (item, loaded, total) => {
                 console.log(`progress ${item}: ${loaded} ${total}`);
@@ -304,7 +309,7 @@ export default class Main {
                 console.log("ENEMY LOADED!!!")
                 let enemyAnimation = new Animation(enemy.mesh)
                 enemyAnimation.playAnim("stand")
-
+                console.log({ model: enemy, anim:enemyAnimation })
 
                 resolve({ model: enemy, anim:enemyAnimation })
             };
@@ -325,8 +330,8 @@ export default class Main {
         // wykonanie funkcji update w module Animations - zobacz do pliku Animations
         if (this.animation) this.animation.update(delta)
         if(this.enemies.length >= 1) {
-            // console.log(this.enemies, this.enemy)
-            this.enemies[0].anim.update(delta)
+            // this.enemies[0].anim.update(delta)
+            this.enemies.forEach(enemy => enemy.anim.update(delta))
             // console.log(this.enemies)
         }  // dla kazdego enemy analogicznie do this.animation.update(delta)
 
@@ -338,6 +343,7 @@ export default class Main {
         // console.log(this.enemies)
         // if(this.enemies[0])  this.enemies[0].anim.playAnim("crwalk")
         if (this.model.mesh) {
+            // console.log(this.model.mesh)
             this.l1.position.set(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z)
             if ( !this.playerWallCollision )
                 this.playerWallCollision = new Collision(this.model.mesh, this.walls)
@@ -356,6 +362,13 @@ export default class Main {
                     else this.collisionStopper = 1
 
                 })
+                    // this.walls.forEach( w=>{
+                    //
+                    //     if (this.collision(this.model.mesh, w.mesh)){
+                    //         this.collisionStopper = 0
+                    //     } else this.collisionStopper = 1
+                    // })
+
             }
 
             // if ( this.enemies.length >= 1 ){
@@ -421,6 +434,38 @@ export default class Main {
          ch.castShadow = true
          if (ch.children) ch.children.forEach(c => c.castShadow = true)
      })
+    }
+    collision(model, d) {
+        // console.log(a)
+        // let b1 = a.position.y - a.geometry.parameters.height / 2;
+        // let t1 = a.position.y + a.geometry.parameters.height / 2;
+        // let r1 = a.position.x + a.geometry.parameters.width / 2;
+        // let l1 = a.position.x - a.geometry.parameters.width / 2;
+        // let f1 = a.position.z - a.geometry.parameters.depth / 2;
+        // let B1 = a.position.z + a.geometry.parameters.depth / 2;
+        // let b2 = d.position.y - d.geometry.parameters.height / 2;
+        // let t2 = d.position.y + d.geometry.parameters.height / 2;
+        // let r2 = d.position.x + d.geometry.parameters.width / 2;
+        // let l2 = d.position.x - d.geometry.parameters.width / 2;
+        // let f2 = d.position.z - d.geometry.parameters.depth / 2;
+        // let B2 = d.position.z + d.geometry.parameters.depth / 2;
+        // console.log( model.box.min, model.box.max, model.box.getSize() );
+        let b1 = model.position.y - model.box.geometry.parameters.height / 2;
+        let t1 = model.position.y + model.box.geometry.parameters.height / 2;
+        let r1 = model.position.x + model.box.geometry.parameters.width / 2;
+        let l1 = model.position.x - model.box.geometry.parameters.width / 2;
+        let f1 = model.position.z - model.box.geometry.parameters.depth / 2;
+        let B1 = model.position.z + model.box.geometry.parameters.depth / 2;
+        let b2 = d.position.y - d.geometry.parameters.height / 2;
+        let t2 = d.position.y + d.geometry.parameters.height / 2;
+        let r2 = d.position.x + d.geometry.parameters.width / 2;
+        let l2 = d.position.x - d.geometry.parameters.width / 2;
+        let f2 = d.position.z - d.geometry.parameters.depth / 2;
+        let B2 = d.position.z + d.geometry.parameters.depth / 2;
+        if (t1 < b2 || r1 < l2 || b1 > t2 || l1 > r2 || f1 > B2 || B1 < f2) {
+            return false;
+        }
+        return true;
     }
 }
 

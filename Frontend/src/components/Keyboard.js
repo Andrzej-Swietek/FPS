@@ -1,5 +1,7 @@
 import Animation from "./Animation"
 import Config from "./Config";
+import axios from "axios";
+import querystring from "querystring"
 
 const KEYS = {
     "left": 37,
@@ -76,6 +78,7 @@ export default class Keyboard {
             case KEYS.spacebar:
                  this.animation.playAnim("crattak")
                 Config.attack = true;
+                const res =  axios.post('http://localhost:5000/attack', JSON.stringify({ dmg: Math.floor( Math.random()*100 )  }))
                 break;
         }
 

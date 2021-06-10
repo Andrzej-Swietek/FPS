@@ -1,6 +1,15 @@
 // import { MD2Loader } from 'three/examples/jsm/loaders/MD2Loader.js';
 import { MD2Loader } from './MD2Loader';
-import {Mesh, TextureLoader, MeshPhongMaterial, PointLight, AmbientLight} from "three"
+import {
+    Mesh,
+    TextureLoader,
+    MeshPhongMaterial,
+    PointLight,
+    AmbientLight,
+    Box3,
+    BoxGeometry,
+    MeshNormalMaterial
+} from "three"
 import marioTex from "./assets/bobafett/prototype_fett.png"
 
 
@@ -9,7 +18,8 @@ export default class Model {
         this.scene = scene;
         this.mesh = null;
         this.manager = manager;
-        this.geometry = null
+        this.geometry = null;
+        this.box = null;
     }
 
     load(path) {
@@ -33,6 +43,7 @@ export default class Model {
                 this.mesh.position.set(0,0,0);
                 this.mesh.castShadow = true;
                 this.mesh.receiveShadow = true;
+                this.box = new Mesh(new BoxGeometry(10,10,10), new MeshNormalMaterial({}))
                 this.scene.add(this.mesh);
 
 

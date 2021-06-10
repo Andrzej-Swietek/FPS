@@ -1,6 +1,1837 @@
 /******/ (() => { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
+
+/***/ "./node_modules/axios/index.js":
+/*!*************************************!*\
+  !*** ./node_modules/axios/index.js ***!
+  \*************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__(/*! ./lib/axios */ "./node_modules/axios/lib/axios.js");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/adapters/xhr.js":
+/*!************************************************!*\
+  !*** ./node_modules/axios/lib/adapters/xhr.js ***!
+  \************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+var settle = __webpack_require__(/*! ./../core/settle */ "./node_modules/axios/lib/core/settle.js");
+var cookies = __webpack_require__(/*! ./../helpers/cookies */ "./node_modules/axios/lib/helpers/cookies.js");
+var buildURL = __webpack_require__(/*! ./../helpers/buildURL */ "./node_modules/axios/lib/helpers/buildURL.js");
+var buildFullPath = __webpack_require__(/*! ../core/buildFullPath */ "./node_modules/axios/lib/core/buildFullPath.js");
+var parseHeaders = __webpack_require__(/*! ./../helpers/parseHeaders */ "./node_modules/axios/lib/helpers/parseHeaders.js");
+var isURLSameOrigin = __webpack_require__(/*! ./../helpers/isURLSameOrigin */ "./node_modules/axios/lib/helpers/isURLSameOrigin.js");
+var createError = __webpack_require__(/*! ../core/createError */ "./node_modules/axios/lib/core/createError.js");
+
+module.exports = function xhrAdapter(config) {
+  return new Promise(function dispatchXhrRequest(resolve, reject) {
+    var requestData = config.data;
+    var requestHeaders = config.headers;
+
+    if (utils.isFormData(requestData)) {
+      delete requestHeaders['Content-Type']; // Let the browser set it
+    }
+
+    var request = new XMLHttpRequest();
+
+    // HTTP basic authentication
+    if (config.auth) {
+      var username = config.auth.username || '';
+      var password = config.auth.password ? unescape(encodeURIComponent(config.auth.password)) : '';
+      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
+    }
+
+    var fullPath = buildFullPath(config.baseURL, config.url);
+    request.open(config.method.toUpperCase(), buildURL(fullPath, config.params, config.paramsSerializer), true);
+
+    // Set the request timeout in MS
+    request.timeout = config.timeout;
+
+    // Listen for ready state
+    request.onreadystatechange = function handleLoad() {
+      if (!request || request.readyState !== 4) {
+        return;
+      }
+
+      // The request errored out and we didn't get a response, this will be
+      // handled by onerror instead
+      // With one exception: request that using file: protocol, most browsers
+      // will return status as 0 even though it's a successful request
+      if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
+        return;
+      }
+
+      // Prepare the response
+      var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
+      var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
+      var response = {
+        data: responseData,
+        status: request.status,
+        statusText: request.statusText,
+        headers: responseHeaders,
+        config: config,
+        request: request
+      };
+
+      settle(resolve, reject, response);
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle browser request cancellation (as opposed to a manual cancellation)
+    request.onabort = function handleAbort() {
+      if (!request) {
+        return;
+      }
+
+      reject(createError('Request aborted', config, 'ECONNABORTED', request));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle low level network errors
+    request.onerror = function handleError() {
+      // Real errors are hidden from us by the browser
+      // onerror should only fire if it's a network error
+      reject(createError('Network Error', config, null, request));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle timeout
+    request.ontimeout = function handleTimeout() {
+      var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';
+      if (config.timeoutErrorMessage) {
+        timeoutErrorMessage = config.timeoutErrorMessage;
+      }
+      reject(createError(timeoutErrorMessage, config, 'ECONNABORTED',
+        request));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Add xsrf header
+    // This is only done if running in a standard browser environment.
+    // Specifically not if we're in a web worker, or react-native.
+    if (utils.isStandardBrowserEnv()) {
+      // Add xsrf header
+      var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName ?
+        cookies.read(config.xsrfCookieName) :
+        undefined;
+
+      if (xsrfValue) {
+        requestHeaders[config.xsrfHeaderName] = xsrfValue;
+      }
+    }
+
+    // Add headers to the request
+    if ('setRequestHeader' in request) {
+      utils.forEach(requestHeaders, function setRequestHeader(val, key) {
+        if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
+          // Remove Content-Type if data is undefined
+          delete requestHeaders[key];
+        } else {
+          // Otherwise add header to the request
+          request.setRequestHeader(key, val);
+        }
+      });
+    }
+
+    // Add withCredentials to request if needed
+    if (!utils.isUndefined(config.withCredentials)) {
+      request.withCredentials = !!config.withCredentials;
+    }
+
+    // Add responseType to request if needed
+    if (config.responseType) {
+      try {
+        request.responseType = config.responseType;
+      } catch (e) {
+        // Expected DOMException thrown by browsers not compatible XMLHttpRequest Level 2.
+        // But, this can be suppressed for 'json' type as it can be parsed by default 'transformResponse' function.
+        if (config.responseType !== 'json') {
+          throw e;
+        }
+      }
+    }
+
+    // Handle progress if needed
+    if (typeof config.onDownloadProgress === 'function') {
+      request.addEventListener('progress', config.onDownloadProgress);
+    }
+
+    // Not all browsers support upload events
+    if (typeof config.onUploadProgress === 'function' && request.upload) {
+      request.upload.addEventListener('progress', config.onUploadProgress);
+    }
+
+    if (config.cancelToken) {
+      // Handle cancellation
+      config.cancelToken.promise.then(function onCanceled(cancel) {
+        if (!request) {
+          return;
+        }
+
+        request.abort();
+        reject(cancel);
+        // Clean up request
+        request = null;
+      });
+    }
+
+    if (!requestData) {
+      requestData = null;
+    }
+
+    // Send the request
+    request.send(requestData);
+  });
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/axios.js":
+/*!*****************************************!*\
+  !*** ./node_modules/axios/lib/axios.js ***!
+  \*****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./utils */ "./node_modules/axios/lib/utils.js");
+var bind = __webpack_require__(/*! ./helpers/bind */ "./node_modules/axios/lib/helpers/bind.js");
+var Axios = __webpack_require__(/*! ./core/Axios */ "./node_modules/axios/lib/core/Axios.js");
+var mergeConfig = __webpack_require__(/*! ./core/mergeConfig */ "./node_modules/axios/lib/core/mergeConfig.js");
+var defaults = __webpack_require__(/*! ./defaults */ "./node_modules/axios/lib/defaults.js");
+
+/**
+ * Create an instance of Axios
+ *
+ * @param {Object} defaultConfig The default config for the instance
+ * @return {Axios} A new instance of Axios
+ */
+function createInstance(defaultConfig) {
+  var context = new Axios(defaultConfig);
+  var instance = bind(Axios.prototype.request, context);
+
+  // Copy axios.prototype to instance
+  utils.extend(instance, Axios.prototype, context);
+
+  // Copy context to instance
+  utils.extend(instance, context);
+
+  return instance;
+}
+
+// Create the default instance to be exported
+var axios = createInstance(defaults);
+
+// Expose Axios class to allow class inheritance
+axios.Axios = Axios;
+
+// Factory for creating new instances
+axios.create = function create(instanceConfig) {
+  return createInstance(mergeConfig(axios.defaults, instanceConfig));
+};
+
+// Expose Cancel & CancelToken
+axios.Cancel = __webpack_require__(/*! ./cancel/Cancel */ "./node_modules/axios/lib/cancel/Cancel.js");
+axios.CancelToken = __webpack_require__(/*! ./cancel/CancelToken */ "./node_modules/axios/lib/cancel/CancelToken.js");
+axios.isCancel = __webpack_require__(/*! ./cancel/isCancel */ "./node_modules/axios/lib/cancel/isCancel.js");
+
+// Expose all/spread
+axios.all = function all(promises) {
+  return Promise.all(promises);
+};
+axios.spread = __webpack_require__(/*! ./helpers/spread */ "./node_modules/axios/lib/helpers/spread.js");
+
+// Expose isAxiosError
+axios.isAxiosError = __webpack_require__(/*! ./helpers/isAxiosError */ "./node_modules/axios/lib/helpers/isAxiosError.js");
+
+module.exports = axios;
+
+// Allow use of default import syntax in TypeScript
+module.exports.default = axios;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/cancel/Cancel.js":
+/*!*************************************************!*\
+  !*** ./node_modules/axios/lib/cancel/Cancel.js ***!
+  \*************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * A `Cancel` is an object that is thrown when an operation is canceled.
+ *
+ * @class
+ * @param {string=} message The message.
+ */
+function Cancel(message) {
+  this.message = message;
+}
+
+Cancel.prototype.toString = function toString() {
+  return 'Cancel' + (this.message ? ': ' + this.message : '');
+};
+
+Cancel.prototype.__CANCEL__ = true;
+
+module.exports = Cancel;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/cancel/CancelToken.js":
+/*!******************************************************!*\
+  !*** ./node_modules/axios/lib/cancel/CancelToken.js ***!
+  \******************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var Cancel = __webpack_require__(/*! ./Cancel */ "./node_modules/axios/lib/cancel/Cancel.js");
+
+/**
+ * A `CancelToken` is an object that can be used to request cancellation of an operation.
+ *
+ * @class
+ * @param {Function} executor The executor function.
+ */
+function CancelToken(executor) {
+  if (typeof executor !== 'function') {
+    throw new TypeError('executor must be a function.');
+  }
+
+  var resolvePromise;
+  this.promise = new Promise(function promiseExecutor(resolve) {
+    resolvePromise = resolve;
+  });
+
+  var token = this;
+  executor(function cancel(message) {
+    if (token.reason) {
+      // Cancellation has already been requested
+      return;
+    }
+
+    token.reason = new Cancel(message);
+    resolvePromise(token.reason);
+  });
+}
+
+/**
+ * Throws a `Cancel` if cancellation has been requested.
+ */
+CancelToken.prototype.throwIfRequested = function throwIfRequested() {
+  if (this.reason) {
+    throw this.reason;
+  }
+};
+
+/**
+ * Returns an object that contains a new `CancelToken` and a function that, when called,
+ * cancels the `CancelToken`.
+ */
+CancelToken.source = function source() {
+  var cancel;
+  var token = new CancelToken(function executor(c) {
+    cancel = c;
+  });
+  return {
+    token: token,
+    cancel: cancel
+  };
+};
+
+module.exports = CancelToken;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/cancel/isCancel.js":
+/*!***************************************************!*\
+  !*** ./node_modules/axios/lib/cancel/isCancel.js ***!
+  \***************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+module.exports = function isCancel(value) {
+  return !!(value && value.__CANCEL__);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/Axios.js":
+/*!**********************************************!*\
+  !*** ./node_modules/axios/lib/core/Axios.js ***!
+  \**********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+var buildURL = __webpack_require__(/*! ../helpers/buildURL */ "./node_modules/axios/lib/helpers/buildURL.js");
+var InterceptorManager = __webpack_require__(/*! ./InterceptorManager */ "./node_modules/axios/lib/core/InterceptorManager.js");
+var dispatchRequest = __webpack_require__(/*! ./dispatchRequest */ "./node_modules/axios/lib/core/dispatchRequest.js");
+var mergeConfig = __webpack_require__(/*! ./mergeConfig */ "./node_modules/axios/lib/core/mergeConfig.js");
+
+/**
+ * Create a new instance of Axios
+ *
+ * @param {Object} instanceConfig The default config for the instance
+ */
+function Axios(instanceConfig) {
+  this.defaults = instanceConfig;
+  this.interceptors = {
+    request: new InterceptorManager(),
+    response: new InterceptorManager()
+  };
+}
+
+/**
+ * Dispatch a request
+ *
+ * @param {Object} config The config specific for this request (merged with this.defaults)
+ */
+Axios.prototype.request = function request(config) {
+  /*eslint no-param-reassign:0*/
+  // Allow for axios('example/url'[, config]) a la fetch API
+  if (typeof config === 'string') {
+    config = arguments[1] || {};
+    config.url = arguments[0];
+  } else {
+    config = config || {};
+  }
+
+  config = mergeConfig(this.defaults, config);
+
+  // Set config.method
+  if (config.method) {
+    config.method = config.method.toLowerCase();
+  } else if (this.defaults.method) {
+    config.method = this.defaults.method.toLowerCase();
+  } else {
+    config.method = 'get';
+  }
+
+  // Hook up interceptors middleware
+  var chain = [dispatchRequest, undefined];
+  var promise = Promise.resolve(config);
+
+  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
+    chain.unshift(interceptor.fulfilled, interceptor.rejected);
+  });
+
+  this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
+    chain.push(interceptor.fulfilled, interceptor.rejected);
+  });
+
+  while (chain.length) {
+    promise = promise.then(chain.shift(), chain.shift());
+  }
+
+  return promise;
+};
+
+Axios.prototype.getUri = function getUri(config) {
+  config = mergeConfig(this.defaults, config);
+  return buildURL(config.url, config.params, config.paramsSerializer).replace(/^\?/, '');
+};
+
+// Provide aliases for supported request methods
+utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
+  /*eslint func-names:0*/
+  Axios.prototype[method] = function(url, config) {
+    return this.request(mergeConfig(config || {}, {
+      method: method,
+      url: url,
+      data: (config || {}).data
+    }));
+  };
+});
+
+utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+  /*eslint func-names:0*/
+  Axios.prototype[method] = function(url, data, config) {
+    return this.request(mergeConfig(config || {}, {
+      method: method,
+      url: url,
+      data: data
+    }));
+  };
+});
+
+module.exports = Axios;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/InterceptorManager.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/axios/lib/core/InterceptorManager.js ***!
+  \***********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+function InterceptorManager() {
+  this.handlers = [];
+}
+
+/**
+ * Add a new interceptor to the stack
+ *
+ * @param {Function} fulfilled The function to handle `then` for a `Promise`
+ * @param {Function} rejected The function to handle `reject` for a `Promise`
+ *
+ * @return {Number} An ID used to remove interceptor later
+ */
+InterceptorManager.prototype.use = function use(fulfilled, rejected) {
+  this.handlers.push({
+    fulfilled: fulfilled,
+    rejected: rejected
+  });
+  return this.handlers.length - 1;
+};
+
+/**
+ * Remove an interceptor from the stack
+ *
+ * @param {Number} id The ID that was returned by `use`
+ */
+InterceptorManager.prototype.eject = function eject(id) {
+  if (this.handlers[id]) {
+    this.handlers[id] = null;
+  }
+};
+
+/**
+ * Iterate over all the registered interceptors
+ *
+ * This method is particularly useful for skipping over any
+ * interceptors that may have become `null` calling `eject`.
+ *
+ * @param {Function} fn The function to call for each interceptor
+ */
+InterceptorManager.prototype.forEach = function forEach(fn) {
+  utils.forEach(this.handlers, function forEachHandler(h) {
+    if (h !== null) {
+      fn(h);
+    }
+  });
+};
+
+module.exports = InterceptorManager;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/buildFullPath.js":
+/*!******************************************************!*\
+  !*** ./node_modules/axios/lib/core/buildFullPath.js ***!
+  \******************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var isAbsoluteURL = __webpack_require__(/*! ../helpers/isAbsoluteURL */ "./node_modules/axios/lib/helpers/isAbsoluteURL.js");
+var combineURLs = __webpack_require__(/*! ../helpers/combineURLs */ "./node_modules/axios/lib/helpers/combineURLs.js");
+
+/**
+ * Creates a new URL by combining the baseURL with the requestedURL,
+ * only when the requestedURL is not already an absolute URL.
+ * If the requestURL is absolute, this function returns the requestedURL untouched.
+ *
+ * @param {string} baseURL The base URL
+ * @param {string} requestedURL Absolute or relative URL to combine
+ * @returns {string} The combined full path
+ */
+module.exports = function buildFullPath(baseURL, requestedURL) {
+  if (baseURL && !isAbsoluteURL(requestedURL)) {
+    return combineURLs(baseURL, requestedURL);
+  }
+  return requestedURL;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/createError.js":
+/*!****************************************************!*\
+  !*** ./node_modules/axios/lib/core/createError.js ***!
+  \****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var enhanceError = __webpack_require__(/*! ./enhanceError */ "./node_modules/axios/lib/core/enhanceError.js");
+
+/**
+ * Create an Error with the specified message, config, error code, request and response.
+ *
+ * @param {string} message The error message.
+ * @param {Object} config The config.
+ * @param {string} [code] The error code (for example, 'ECONNABORTED').
+ * @param {Object} [request] The request.
+ * @param {Object} [response] The response.
+ * @returns {Error} The created error.
+ */
+module.exports = function createError(message, config, code, request, response) {
+  var error = new Error(message);
+  return enhanceError(error, config, code, request, response);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/dispatchRequest.js":
+/*!********************************************************!*\
+  !*** ./node_modules/axios/lib/core/dispatchRequest.js ***!
+  \********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+var transformData = __webpack_require__(/*! ./transformData */ "./node_modules/axios/lib/core/transformData.js");
+var isCancel = __webpack_require__(/*! ../cancel/isCancel */ "./node_modules/axios/lib/cancel/isCancel.js");
+var defaults = __webpack_require__(/*! ../defaults */ "./node_modules/axios/lib/defaults.js");
+
+/**
+ * Throws a `Cancel` if cancellation has been requested.
+ */
+function throwIfCancellationRequested(config) {
+  if (config.cancelToken) {
+    config.cancelToken.throwIfRequested();
+  }
+}
+
+/**
+ * Dispatch a request to the server using the configured adapter.
+ *
+ * @param {object} config The config that is to be used for the request
+ * @returns {Promise} The Promise to be fulfilled
+ */
+module.exports = function dispatchRequest(config) {
+  throwIfCancellationRequested(config);
+
+  // Ensure headers exist
+  config.headers = config.headers || {};
+
+  // Transform request data
+  config.data = transformData(
+    config.data,
+    config.headers,
+    config.transformRequest
+  );
+
+  // Flatten headers
+  config.headers = utils.merge(
+    config.headers.common || {},
+    config.headers[config.method] || {},
+    config.headers
+  );
+
+  utils.forEach(
+    ['delete', 'get', 'head', 'post', 'put', 'patch', 'common'],
+    function cleanHeaderConfig(method) {
+      delete config.headers[method];
+    }
+  );
+
+  var adapter = config.adapter || defaults.adapter;
+
+  return adapter(config).then(function onAdapterResolution(response) {
+    throwIfCancellationRequested(config);
+
+    // Transform response data
+    response.data = transformData(
+      response.data,
+      response.headers,
+      config.transformResponse
+    );
+
+    return response;
+  }, function onAdapterRejection(reason) {
+    if (!isCancel(reason)) {
+      throwIfCancellationRequested(config);
+
+      // Transform response data
+      if (reason && reason.response) {
+        reason.response.data = transformData(
+          reason.response.data,
+          reason.response.headers,
+          config.transformResponse
+        );
+      }
+    }
+
+    return Promise.reject(reason);
+  });
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/enhanceError.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/axios/lib/core/enhanceError.js ***!
+  \*****************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Update an Error with the specified config, error code, and response.
+ *
+ * @param {Error} error The error to update.
+ * @param {Object} config The config.
+ * @param {string} [code] The error code (for example, 'ECONNABORTED').
+ * @param {Object} [request] The request.
+ * @param {Object} [response] The response.
+ * @returns {Error} The error.
+ */
+module.exports = function enhanceError(error, config, code, request, response) {
+  error.config = config;
+  if (code) {
+    error.code = code;
+  }
+
+  error.request = request;
+  error.response = response;
+  error.isAxiosError = true;
+
+  error.toJSON = function toJSON() {
+    return {
+      // Standard
+      message: this.message,
+      name: this.name,
+      // Microsoft
+      description: this.description,
+      number: this.number,
+      // Mozilla
+      fileName: this.fileName,
+      lineNumber: this.lineNumber,
+      columnNumber: this.columnNumber,
+      stack: this.stack,
+      // Axios
+      config: this.config,
+      code: this.code
+    };
+  };
+  return error;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/mergeConfig.js":
+/*!****************************************************!*\
+  !*** ./node_modules/axios/lib/core/mergeConfig.js ***!
+  \****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ../utils */ "./node_modules/axios/lib/utils.js");
+
+/**
+ * Config-specific merge-function which creates a new config-object
+ * by merging two configuration objects together.
+ *
+ * @param {Object} config1
+ * @param {Object} config2
+ * @returns {Object} New object resulting from merging config2 to config1
+ */
+module.exports = function mergeConfig(config1, config2) {
+  // eslint-disable-next-line no-param-reassign
+  config2 = config2 || {};
+  var config = {};
+
+  var valueFromConfig2Keys = ['url', 'method', 'data'];
+  var mergeDeepPropertiesKeys = ['headers', 'auth', 'proxy', 'params'];
+  var defaultToConfig2Keys = [
+    'baseURL', 'transformRequest', 'transformResponse', 'paramsSerializer',
+    'timeout', 'timeoutMessage', 'withCredentials', 'adapter', 'responseType', 'xsrfCookieName',
+    'xsrfHeaderName', 'onUploadProgress', 'onDownloadProgress', 'decompress',
+    'maxContentLength', 'maxBodyLength', 'maxRedirects', 'transport', 'httpAgent',
+    'httpsAgent', 'cancelToken', 'socketPath', 'responseEncoding'
+  ];
+  var directMergeKeys = ['validateStatus'];
+
+  function getMergedValue(target, source) {
+    if (utils.isPlainObject(target) && utils.isPlainObject(source)) {
+      return utils.merge(target, source);
+    } else if (utils.isPlainObject(source)) {
+      return utils.merge({}, source);
+    } else if (utils.isArray(source)) {
+      return source.slice();
+    }
+    return source;
+  }
+
+  function mergeDeepProperties(prop) {
+    if (!utils.isUndefined(config2[prop])) {
+      config[prop] = getMergedValue(config1[prop], config2[prop]);
+    } else if (!utils.isUndefined(config1[prop])) {
+      config[prop] = getMergedValue(undefined, config1[prop]);
+    }
+  }
+
+  utils.forEach(valueFromConfig2Keys, function valueFromConfig2(prop) {
+    if (!utils.isUndefined(config2[prop])) {
+      config[prop] = getMergedValue(undefined, config2[prop]);
+    }
+  });
+
+  utils.forEach(mergeDeepPropertiesKeys, mergeDeepProperties);
+
+  utils.forEach(defaultToConfig2Keys, function defaultToConfig2(prop) {
+    if (!utils.isUndefined(config2[prop])) {
+      config[prop] = getMergedValue(undefined, config2[prop]);
+    } else if (!utils.isUndefined(config1[prop])) {
+      config[prop] = getMergedValue(undefined, config1[prop]);
+    }
+  });
+
+  utils.forEach(directMergeKeys, function merge(prop) {
+    if (prop in config2) {
+      config[prop] = getMergedValue(config1[prop], config2[prop]);
+    } else if (prop in config1) {
+      config[prop] = getMergedValue(undefined, config1[prop]);
+    }
+  });
+
+  var axiosKeys = valueFromConfig2Keys
+    .concat(mergeDeepPropertiesKeys)
+    .concat(defaultToConfig2Keys)
+    .concat(directMergeKeys);
+
+  var otherKeys = Object
+    .keys(config1)
+    .concat(Object.keys(config2))
+    .filter(function filterAxiosKeys(key) {
+      return axiosKeys.indexOf(key) === -1;
+    });
+
+  utils.forEach(otherKeys, mergeDeepProperties);
+
+  return config;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/settle.js":
+/*!***********************************************!*\
+  !*** ./node_modules/axios/lib/core/settle.js ***!
+  \***********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var createError = __webpack_require__(/*! ./createError */ "./node_modules/axios/lib/core/createError.js");
+
+/**
+ * Resolve or reject a Promise based on response status.
+ *
+ * @param {Function} resolve A function that resolves the promise.
+ * @param {Function} reject A function that rejects the promise.
+ * @param {object} response The response.
+ */
+module.exports = function settle(resolve, reject, response) {
+  var validateStatus = response.config.validateStatus;
+  if (!response.status || !validateStatus || validateStatus(response.status)) {
+    resolve(response);
+  } else {
+    reject(createError(
+      'Request failed with status code ' + response.status,
+      response.config,
+      null,
+      response.request,
+      response
+    ));
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/transformData.js":
+/*!******************************************************!*\
+  !*** ./node_modules/axios/lib/core/transformData.js ***!
+  \******************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+/**
+ * Transform the data for a request or a response
+ *
+ * @param {Object|String} data The data to be transformed
+ * @param {Array} headers The headers for the request or response
+ * @param {Array|Function} fns A single function or Array of functions
+ * @returns {*} The resulting transformed data
+ */
+module.exports = function transformData(data, headers, fns) {
+  /*eslint no-param-reassign:0*/
+  utils.forEach(fns, function transform(fn) {
+    data = fn(data, headers);
+  });
+
+  return data;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/defaults.js":
+/*!********************************************!*\
+  !*** ./node_modules/axios/lib/defaults.js ***!
+  \********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./utils */ "./node_modules/axios/lib/utils.js");
+var normalizeHeaderName = __webpack_require__(/*! ./helpers/normalizeHeaderName */ "./node_modules/axios/lib/helpers/normalizeHeaderName.js");
+
+var DEFAULT_CONTENT_TYPE = {
+  'Content-Type': 'application/x-www-form-urlencoded'
+};
+
+function setContentTypeIfUnset(headers, value) {
+  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
+    headers['Content-Type'] = value;
+  }
+}
+
+function getDefaultAdapter() {
+  var adapter;
+  if (typeof XMLHttpRequest !== 'undefined') {
+    // For browsers use XHR adapter
+    adapter = __webpack_require__(/*! ./adapters/xhr */ "./node_modules/axios/lib/adapters/xhr.js");
+  } else if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
+    // For node use HTTP adapter
+    adapter = __webpack_require__(/*! ./adapters/http */ "./node_modules/axios/lib/adapters/xhr.js");
+  }
+  return adapter;
+}
+
+var defaults = {
+  adapter: getDefaultAdapter(),
+
+  transformRequest: [function transformRequest(data, headers) {
+    normalizeHeaderName(headers, 'Accept');
+    normalizeHeaderName(headers, 'Content-Type');
+    if (utils.isFormData(data) ||
+      utils.isArrayBuffer(data) ||
+      utils.isBuffer(data) ||
+      utils.isStream(data) ||
+      utils.isFile(data) ||
+      utils.isBlob(data)
+    ) {
+      return data;
+    }
+    if (utils.isArrayBufferView(data)) {
+      return data.buffer;
+    }
+    if (utils.isURLSearchParams(data)) {
+      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
+      return data.toString();
+    }
+    if (utils.isObject(data)) {
+      setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
+      return JSON.stringify(data);
+    }
+    return data;
+  }],
+
+  transformResponse: [function transformResponse(data) {
+    /*eslint no-param-reassign:0*/
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data);
+      } catch (e) { /* Ignore */ }
+    }
+    return data;
+  }],
+
+  /**
+   * A timeout in milliseconds to abort a request. If set to 0 (default) a
+   * timeout is not created.
+   */
+  timeout: 0,
+
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+
+  maxContentLength: -1,
+  maxBodyLength: -1,
+
+  validateStatus: function validateStatus(status) {
+    return status >= 200 && status < 300;
+  }
+};
+
+defaults.headers = {
+  common: {
+    'Accept': 'application/json, text/plain, */*'
+  }
+};
+
+utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+  defaults.headers[method] = {};
+});
+
+utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
+});
+
+module.exports = defaults;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/bind.js":
+/*!************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/bind.js ***!
+  \************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+module.exports = function bind(fn, thisArg) {
+  return function wrap() {
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+    return fn.apply(thisArg, args);
+  };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/buildURL.js":
+/*!****************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/buildURL.js ***!
+  \****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+function encode(val) {
+  return encodeURIComponent(val).
+    replace(/%3A/gi, ':').
+    replace(/%24/g, '$').
+    replace(/%2C/gi, ',').
+    replace(/%20/g, '+').
+    replace(/%5B/gi, '[').
+    replace(/%5D/gi, ']');
+}
+
+/**
+ * Build a URL by appending params to the end
+ *
+ * @param {string} url The base of the url (e.g., http://www.google.com)
+ * @param {object} [params] The params to be appended
+ * @returns {string} The formatted url
+ */
+module.exports = function buildURL(url, params, paramsSerializer) {
+  /*eslint no-param-reassign:0*/
+  if (!params) {
+    return url;
+  }
+
+  var serializedParams;
+  if (paramsSerializer) {
+    serializedParams = paramsSerializer(params);
+  } else if (utils.isURLSearchParams(params)) {
+    serializedParams = params.toString();
+  } else {
+    var parts = [];
+
+    utils.forEach(params, function serialize(val, key) {
+      if (val === null || typeof val === 'undefined') {
+        return;
+      }
+
+      if (utils.isArray(val)) {
+        key = key + '[]';
+      } else {
+        val = [val];
+      }
+
+      utils.forEach(val, function parseValue(v) {
+        if (utils.isDate(v)) {
+          v = v.toISOString();
+        } else if (utils.isObject(v)) {
+          v = JSON.stringify(v);
+        }
+        parts.push(encode(key) + '=' + encode(v));
+      });
+    });
+
+    serializedParams = parts.join('&');
+  }
+
+  if (serializedParams) {
+    var hashmarkIndex = url.indexOf('#');
+    if (hashmarkIndex !== -1) {
+      url = url.slice(0, hashmarkIndex);
+    }
+
+    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;
+  }
+
+  return url;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/combineURLs.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/combineURLs.js ***!
+  \*******************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Creates a new URL by combining the specified URLs
+ *
+ * @param {string} baseURL The base URL
+ * @param {string} relativeURL The relative URL
+ * @returns {string} The combined URL
+ */
+module.exports = function combineURLs(baseURL, relativeURL) {
+  return relativeURL
+    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
+    : baseURL;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/cookies.js":
+/*!***************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/cookies.js ***!
+  \***************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+module.exports = (
+  utils.isStandardBrowserEnv() ?
+
+  // Standard browser envs support document.cookie
+    (function standardBrowserEnv() {
+      return {
+        write: function write(name, value, expires, path, domain, secure) {
+          var cookie = [];
+          cookie.push(name + '=' + encodeURIComponent(value));
+
+          if (utils.isNumber(expires)) {
+            cookie.push('expires=' + new Date(expires).toGMTString());
+          }
+
+          if (utils.isString(path)) {
+            cookie.push('path=' + path);
+          }
+
+          if (utils.isString(domain)) {
+            cookie.push('domain=' + domain);
+          }
+
+          if (secure === true) {
+            cookie.push('secure');
+          }
+
+          document.cookie = cookie.join('; ');
+        },
+
+        read: function read(name) {
+          var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+          return (match ? decodeURIComponent(match[3]) : null);
+        },
+
+        remove: function remove(name) {
+          this.write(name, '', Date.now() - 86400000);
+        }
+      };
+    })() :
+
+  // Non standard browser env (web workers, react-native) lack needed support.
+    (function nonStandardBrowserEnv() {
+      return {
+        write: function write() {},
+        read: function read() { return null; },
+        remove: function remove() {}
+      };
+    })()
+);
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/isAbsoluteURL.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/isAbsoluteURL.js ***!
+  \*********************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Determines whether the specified URL is absolute
+ *
+ * @param {string} url The URL to test
+ * @returns {boolean} True if the specified URL is absolute, otherwise false
+ */
+module.exports = function isAbsoluteURL(url) {
+  // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
+  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
+  // by any combination of letters, digits, plus, period, or hyphen.
+  return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/isAxiosError.js":
+/*!********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/isAxiosError.js ***!
+  \********************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Determines whether the payload is an error thrown by Axios
+ *
+ * @param {*} payload The value to test
+ * @returns {boolean} True if the payload is an error thrown by Axios, otherwise false
+ */
+module.exports = function isAxiosError(payload) {
+  return (typeof payload === 'object') && (payload.isAxiosError === true);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/isURLSameOrigin.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/isURLSameOrigin.js ***!
+  \***********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+module.exports = (
+  utils.isStandardBrowserEnv() ?
+
+  // Standard browser envs have full support of the APIs needed to test
+  // whether the request URL is of the same origin as current location.
+    (function standardBrowserEnv() {
+      var msie = /(msie|trident)/i.test(navigator.userAgent);
+      var urlParsingNode = document.createElement('a');
+      var originURL;
+
+      /**
+    * Parse a URL to discover it's components
+    *
+    * @param {String} url The URL to be parsed
+    * @returns {Object}
+    */
+      function resolveURL(url) {
+        var href = url;
+
+        if (msie) {
+        // IE needs attribute set twice to normalize properties
+          urlParsingNode.setAttribute('href', href);
+          href = urlParsingNode.href;
+        }
+
+        urlParsingNode.setAttribute('href', href);
+
+        // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+        return {
+          href: urlParsingNode.href,
+          protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+          host: urlParsingNode.host,
+          search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+          hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+          hostname: urlParsingNode.hostname,
+          port: urlParsingNode.port,
+          pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
+            urlParsingNode.pathname :
+            '/' + urlParsingNode.pathname
+        };
+      }
+
+      originURL = resolveURL(window.location.href);
+
+      /**
+    * Determine if a URL shares the same origin as the current location
+    *
+    * @param {String} requestURL The URL to test
+    * @returns {boolean} True if URL shares the same origin, otherwise false
+    */
+      return function isURLSameOrigin(requestURL) {
+        var parsed = (utils.isString(requestURL)) ? resolveURL(requestURL) : requestURL;
+        return (parsed.protocol === originURL.protocol &&
+            parsed.host === originURL.host);
+      };
+    })() :
+
+  // Non standard browser envs (web workers, react-native) lack needed support.
+    (function nonStandardBrowserEnv() {
+      return function isURLSameOrigin() {
+        return true;
+      };
+    })()
+);
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/normalizeHeaderName.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/normalizeHeaderName.js ***!
+  \***************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ../utils */ "./node_modules/axios/lib/utils.js");
+
+module.exports = function normalizeHeaderName(headers, normalizedName) {
+  utils.forEach(headers, function processHeader(value, name) {
+    if (name !== normalizedName && name.toUpperCase() === normalizedName.toUpperCase()) {
+      headers[normalizedName] = value;
+      delete headers[name];
+    }
+  });
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/parseHeaders.js":
+/*!********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/parseHeaders.js ***!
+  \********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+// Headers whose duplicates are ignored by node
+// c.f. https://nodejs.org/api/http.html#http_message_headers
+var ignoreDuplicateOf = [
+  'age', 'authorization', 'content-length', 'content-type', 'etag',
+  'expires', 'from', 'host', 'if-modified-since', 'if-unmodified-since',
+  'last-modified', 'location', 'max-forwards', 'proxy-authorization',
+  'referer', 'retry-after', 'user-agent'
+];
+
+/**
+ * Parse headers into an object
+ *
+ * ```
+ * Date: Wed, 27 Aug 2014 08:58:49 GMT
+ * Content-Type: application/json
+ * Connection: keep-alive
+ * Transfer-Encoding: chunked
+ * ```
+ *
+ * @param {String} headers Headers needing to be parsed
+ * @returns {Object} Headers parsed into an object
+ */
+module.exports = function parseHeaders(headers) {
+  var parsed = {};
+  var key;
+  var val;
+  var i;
+
+  if (!headers) { return parsed; }
+
+  utils.forEach(headers.split('\n'), function parser(line) {
+    i = line.indexOf(':');
+    key = utils.trim(line.substr(0, i)).toLowerCase();
+    val = utils.trim(line.substr(i + 1));
+
+    if (key) {
+      if (parsed[key] && ignoreDuplicateOf.indexOf(key) >= 0) {
+        return;
+      }
+      if (key === 'set-cookie') {
+        parsed[key] = (parsed[key] ? parsed[key] : []).concat([val]);
+      } else {
+        parsed[key] = parsed[key] ? parsed[key] + ', ' + val : val;
+      }
+    }
+  });
+
+  return parsed;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/spread.js":
+/*!**************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/spread.js ***!
+  \**************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Syntactic sugar for invoking a function and expanding an array for arguments.
+ *
+ * Common use case would be to use `Function.prototype.apply`.
+ *
+ *  ```js
+ *  function f(x, y, z) {}
+ *  var args = [1, 2, 3];
+ *  f.apply(null, args);
+ *  ```
+ *
+ * With `spread` this example can be re-written.
+ *
+ *  ```js
+ *  spread(function(x, y, z) {})([1, 2, 3]);
+ *  ```
+ *
+ * @param {Function} callback
+ * @returns {Function}
+ */
+module.exports = function spread(callback) {
+  return function wrap(arr) {
+    return callback.apply(null, arr);
+  };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/utils.js":
+/*!*****************************************!*\
+  !*** ./node_modules/axios/lib/utils.js ***!
+  \*****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var bind = __webpack_require__(/*! ./helpers/bind */ "./node_modules/axios/lib/helpers/bind.js");
+
+/*global toString:true*/
+
+// utils is a library of generic helper functions non-specific to axios
+
+var toString = Object.prototype.toString;
+
+/**
+ * Determine if a value is an Array
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is an Array, otherwise false
+ */
+function isArray(val) {
+  return toString.call(val) === '[object Array]';
+}
+
+/**
+ * Determine if a value is undefined
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if the value is undefined, otherwise false
+ */
+function isUndefined(val) {
+  return typeof val === 'undefined';
+}
+
+/**
+ * Determine if a value is a Buffer
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Buffer, otherwise false
+ */
+function isBuffer(val) {
+  return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor)
+    && typeof val.constructor.isBuffer === 'function' && val.constructor.isBuffer(val);
+}
+
+/**
+ * Determine if a value is an ArrayBuffer
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is an ArrayBuffer, otherwise false
+ */
+function isArrayBuffer(val) {
+  return toString.call(val) === '[object ArrayBuffer]';
+}
+
+/**
+ * Determine if a value is a FormData
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is an FormData, otherwise false
+ */
+function isFormData(val) {
+  return (typeof FormData !== 'undefined') && (val instanceof FormData);
+}
+
+/**
+ * Determine if a value is a view on an ArrayBuffer
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a view on an ArrayBuffer, otherwise false
+ */
+function isArrayBufferView(val) {
+  var result;
+  if ((typeof ArrayBuffer !== 'undefined') && (ArrayBuffer.isView)) {
+    result = ArrayBuffer.isView(val);
+  } else {
+    result = (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
+  }
+  return result;
+}
+
+/**
+ * Determine if a value is a String
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a String, otherwise false
+ */
+function isString(val) {
+  return typeof val === 'string';
+}
+
+/**
+ * Determine if a value is a Number
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Number, otherwise false
+ */
+function isNumber(val) {
+  return typeof val === 'number';
+}
+
+/**
+ * Determine if a value is an Object
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is an Object, otherwise false
+ */
+function isObject(val) {
+  return val !== null && typeof val === 'object';
+}
+
+/**
+ * Determine if a value is a plain Object
+ *
+ * @param {Object} val The value to test
+ * @return {boolean} True if value is a plain Object, otherwise false
+ */
+function isPlainObject(val) {
+  if (toString.call(val) !== '[object Object]') {
+    return false;
+  }
+
+  var prototype = Object.getPrototypeOf(val);
+  return prototype === null || prototype === Object.prototype;
+}
+
+/**
+ * Determine if a value is a Date
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Date, otherwise false
+ */
+function isDate(val) {
+  return toString.call(val) === '[object Date]';
+}
+
+/**
+ * Determine if a value is a File
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a File, otherwise false
+ */
+function isFile(val) {
+  return toString.call(val) === '[object File]';
+}
+
+/**
+ * Determine if a value is a Blob
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Blob, otherwise false
+ */
+function isBlob(val) {
+  return toString.call(val) === '[object Blob]';
+}
+
+/**
+ * Determine if a value is a Function
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Function, otherwise false
+ */
+function isFunction(val) {
+  return toString.call(val) === '[object Function]';
+}
+
+/**
+ * Determine if a value is a Stream
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Stream, otherwise false
+ */
+function isStream(val) {
+  return isObject(val) && isFunction(val.pipe);
+}
+
+/**
+ * Determine if a value is a URLSearchParams object
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a URLSearchParams object, otherwise false
+ */
+function isURLSearchParams(val) {
+  return typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams;
+}
+
+/**
+ * Trim excess whitespace off the beginning and end of a string
+ *
+ * @param {String} str The String to trim
+ * @returns {String} The String freed of excess whitespace
+ */
+function trim(str) {
+  return str.replace(/^\s*/, '').replace(/\s*$/, '');
+}
+
+/**
+ * Determine if we're running in a standard browser environment
+ *
+ * This allows axios to run in a web worker, and react-native.
+ * Both environments support XMLHttpRequest, but not fully standard globals.
+ *
+ * web workers:
+ *  typeof window -> undefined
+ *  typeof document -> undefined
+ *
+ * react-native:
+ *  navigator.product -> 'ReactNative'
+ * nativescript
+ *  navigator.product -> 'NativeScript' or 'NS'
+ */
+function isStandardBrowserEnv() {
+  if (typeof navigator !== 'undefined' && (navigator.product === 'ReactNative' ||
+                                           navigator.product === 'NativeScript' ||
+                                           navigator.product === 'NS')) {
+    return false;
+  }
+  return (
+    typeof window !== 'undefined' &&
+    typeof document !== 'undefined'
+  );
+}
+
+/**
+ * Iterate over an Array or an Object invoking a function for each item.
+ *
+ * If `obj` is an Array callback will be called passing
+ * the value, index, and complete array for each item.
+ *
+ * If 'obj' is an Object callback will be called passing
+ * the value, key, and complete object for each property.
+ *
+ * @param {Object|Array} obj The object to iterate
+ * @param {Function} fn The callback to invoke for each item
+ */
+function forEach(obj, fn) {
+  // Don't bother if no value provided
+  if (obj === null || typeof obj === 'undefined') {
+    return;
+  }
+
+  // Force an array if not already something iterable
+  if (typeof obj !== 'object') {
+    /*eslint no-param-reassign:0*/
+    obj = [obj];
+  }
+
+  if (isArray(obj)) {
+    // Iterate over array values
+    for (var i = 0, l = obj.length; i < l; i++) {
+      fn.call(null, obj[i], i, obj);
+    }
+  } else {
+    // Iterate over object keys
+    for (var key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        fn.call(null, obj[key], key, obj);
+      }
+    }
+  }
+}
+
+/**
+ * Accepts varargs expecting each argument to be an object, then
+ * immutably merges the properties of each object and returns result.
+ *
+ * When multiple objects contain the same key the later object in
+ * the arguments list will take precedence.
+ *
+ * Example:
+ *
+ * ```js
+ * var result = merge({foo: 123}, {foo: 456});
+ * console.log(result.foo); // outputs 456
+ * ```
+ *
+ * @param {Object} obj1 Object to merge
+ * @returns {Object} Result of all merge properties
+ */
+function merge(/* obj1, obj2, obj3, ... */) {
+  var result = {};
+  function assignValue(val, key) {
+    if (isPlainObject(result[key]) && isPlainObject(val)) {
+      result[key] = merge(result[key], val);
+    } else if (isPlainObject(val)) {
+      result[key] = merge({}, val);
+    } else if (isArray(val)) {
+      result[key] = val.slice();
+    } else {
+      result[key] = val;
+    }
+  }
+
+  for (var i = 0, l = arguments.length; i < l; i++) {
+    forEach(arguments[i], assignValue);
+  }
+  return result;
+}
+
+/**
+ * Extends object a by mutably adding to it the properties of object b.
+ *
+ * @param {Object} a The object to be extended
+ * @param {Object} b The object to copy properties from
+ * @param {Object} thisArg The object to bind function to
+ * @return {Object} The resulting value of object a
+ */
+function extend(a, b, thisArg) {
+  forEach(b, function assignValue(val, key) {
+    if (thisArg && typeof val === 'function') {
+      a[key] = bind(val, thisArg);
+    } else {
+      a[key] = val;
+    }
+  });
+  return a;
+}
+
+/**
+ * Remove byte order marker. This catches EF BB BF (the UTF-8 BOM)
+ *
+ * @param {string} content with BOM
+ * @return {string} content value without BOM
+ */
+function stripBOM(content) {
+  if (content.charCodeAt(0) === 0xFEFF) {
+    content = content.slice(1);
+  }
+  return content;
+}
+
+module.exports = {
+  isArray: isArray,
+  isArrayBuffer: isArrayBuffer,
+  isBuffer: isBuffer,
+  isFormData: isFormData,
+  isArrayBufferView: isArrayBufferView,
+  isString: isString,
+  isNumber: isNumber,
+  isObject: isObject,
+  isPlainObject: isPlainObject,
+  isUndefined: isUndefined,
+  isDate: isDate,
+  isFile: isFile,
+  isBlob: isBlob,
+  isFunction: isFunction,
+  isStream: isStream,
+  isURLSearchParams: isURLSearchParams,
+  isStandardBrowserEnv: isStandardBrowserEnv,
+  forEach: forEach,
+  merge: merge,
+  extend: extend,
+  trim: trim,
+  stripBOM: stripBOM
+};
+
+
+/***/ }),
 
 /***/ "./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/style.scss":
 /*!*****************************************************************************************************!*\
@@ -8,6 +1839,7 @@
   \*****************************************************************************************************/
 /***/ ((module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
@@ -21,7 +1853,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nbody {\n  margin: 0;\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  background-color: #aacaf3;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: column nowrap;\n  font-family: Arial, Helvetica, sans-serif;\n}\n\nh1 {\n  font-size: 3rem;\n  font-weight: 900;\n  text-transform: capitalize;\n}\n\n.title-bar {\n  padding: 1rem;\n  color: #2c3e50;\n  position: absolute;\n  top: 0;\n  left: 0;\n  text-align: center;\n  width: 100%;\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n}\n\n.settings {\n  color: azure;\n  transition: 2s ease-in-out;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n  justify-content: space-between;\n  min-height: 20vh;\n  width: 100%;\n  position: absolute;\n  bottom: 0;\n  left: 0;\n  background: rgba(84, 83, 83, 0.7);\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n}\n.settings .slider-element-container {\n  margin: 1rem;\n  padding: 1rem;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: column nowrap;\n}\n.settings .slider-element-container h5 {\n  margin-bottom: 1rem;\n}\n.settings .checkbox-element-container {\n  width: 30%;\n  display: flex;\n  align-items: flex-start;\n  justify-content: center;\n  flex-flow: column nowrap;\n  justify-self: flex-end;\n  padding: 0 2rem;\n  border-left: 3px solid black;\n  height: 20vh;\n  background: #2e2d2d;\n  font-size: 1.6rem;\n  color: azure;\n}\n.settings .checkbox-element-container div {\n  margin: 1rem 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n}\n.settings .checkbox-element-container div input {\n  order: 1;\n  height: 1.6rem;\n  width: 1.6rem;\n}\n.settings .checkbox-element-container div h5 {\n  margin-left: 1rem;\n  order: 2;\n}\n.settings .fire-settings-element-container {\n  display: flex;\n  align-items: center;\n  justify-content: space-evenly;\n  flex-flow: column nowrap;\n  width: 30%;\n  padding: 0 2rem;\n  border-left: 3px solid black;\n  height: 20vh;\n  background: #2e2d2d;\n  font-size: 1.6rem;\n  color: azure;\n}\n.settings .fire-settings-element-container div {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n  width: 100%;\n  height: 25%;\n  margin: 1rem;\n}\n.settings .fire-settings-element-container div input {\n  margin-left: 1.5rem;\n}\n\n#sidebar {\n  position: absolute;\n  right: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: column nowrap;\n}\n#sidebar #toggle, #sidebar #toggleHP, #sidebar #home {\n  width: 100px;\n  height: 100px;\n  background-color: #545353;\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n  color: azure;\n  font-size: 2rem;\n  transition: 0.5s;\n}\n#sidebar #toggle:hover, #sidebar #toggleHP:hover, #sidebar #home:hover {\n  color: #8affff;\n  background-color: #212020;\n  font-size: 2.1rem;\n  cursor: pointer;\n}\n#sidebar #home a {\n  text-decoration: none;\n  color: inherit;\n}\n.d-n {\n  display: none;\n}\n\ninput[type=range] {\n  -webkit-appearance: none;\n  position: relative;\n}\n\ninput[type=range]::-webkit-slider-runnable-track {\n  width: 300px;\n  height: 2px;\n  border: none;\n  border-radius: 3px;\n}\n\ninput[type=range]::-webkit-slider-thumb {\n  -webkit-appearance: none;\n  border: none;\n  height: 12px;\n  width: 12px;\n  border-radius: 510%;\n  background: #141414;\n  border: 2px solid #515151;\n  margin-top: -5px;\n  cursor: pointer;\n}\n\n.focused::-webkit-slider-thumb {\n  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.15);\n}\n\n.clicked::-webkit-slider-thumb {\n  -webkit-transform: scale(1.5);\n}\n\n.disabled::-webkit-slider-thumb {\n  -webkit-transform: scale(0.9);\n  box-shadow: 0 0 0 3px #141414;\n  background: #515151 !important;\n  border-color: #515151 !important;\n}\n\ninput[type=range]:focus {\n  outline: none;\n}\n\n.rangeM input[type=range].disabled::-webkit-slider-runnable-track {\n  background: #515151 !important;\n}\n\n.rangeM input[type=range]::-webkit-slider-thumb {\n  background: #3f51b5;\n  border-color: #3f51b5;\n}\n\n.range:hover input[type=range]:before {\n  color: white;\n  content: \"50\";\n  position: absolute;\n  font-family: Roboto Slab;\n  top: -49px;\n  background: #3f51b5;\n  padding: 8px 0 3px;\n  font-size: 14px;\n  width: 30px;\n  text-align: center;\n  border-radius: 100% 100% 0 0;\n}\n\n.range:hover input[type=range]:after {\n  content: \"\";\n  position: absolute;\n  top: -19px;\n  left: 50px;\n  border-left: 15px solid transparent;\n  border-right: 15px solid transparent;\n  border-top: 8px solid #3f51b5;\n  font-family: Roboto Slab;\n}\n\n.personStats {\n  position: absolute;\n  top: 0;\n  left: 0;\n  height: 20vh;\n  width: 30%;\n  display: flex;\n  align-items: center;\n  justify-content: flex-start;\n  flex-flow: row nowrap;\n  background-color: #545353;\n  border-radius: 0 0 40px 0;\n  overflow: hidden;\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n}\n.personStats img {\n  width: 40%;\n  overflow: hidden;\n  border-radius: 40px;\n  border: 3px azure solid;\n}\n.personStats div {\n  width: 60%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: flex-start;\n  flex-flow: row wrap;\n}\n.personStats div .hp {\n  height: 20%;\n  width: 100%;\n  background-color: #f68989;\n}\n.personStats div .hp .hp-progress {\n  background-color: #d72121;\n  width: 50%;\n  height: 100%;\n  z-index: 10;\n  border-radius: 0 40px 40px 0;\n}\n.personStats div .mp {\n  height: 20%;\n  width: 100%;\n  background-color: #7f86d9;\n}\n.personStats div .mp .mp-progress {\n  background-color: #2133d7;\n  width: 50%;\n  height: 100%;\n  z-index: 10;\n  border-radius: 0 40px 40px 0;\n}\n.personStats div .exp {\n  height: 20%;\n  width: 100%;\n  background-color: #5e3c79;\n}\n.personStats div .exp .exp-progress {\n  background-color: #560d83;\n  width: 50%;\n  height: 100%;\n  z-index: 10;\n  border-radius: 0 40px 40px 0;\n}", "",{"version":3,"sources":["webpack://./src/style.scss"],"names":[],"mappings":"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","sourcesContent":["$bg: #aacaf3;\n$vue-text-color: #2c3e50;\n$shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n$shadow2: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;\n$shadow3: rgba(0, 0, 0, 0.08) 0px 4px 12px;\n\n$txtColor: azure;\n$settingsBg: #545353;\n\n@mixin df ($dir,$wrap,$x: center,$y: center){\n  display: flex;\n  align-items: $y;\n  justify-content: $x;\n  flex-flow: $dir $wrap;\n}\n\n\n* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\nbody {\n  margin: 0;\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  background-color: $bg;\n  @include df(column,nowrap);\n  font-family: Arial, Helvetica, sans-serif;\n}\n\nh1  {\n  font-size: 3rem;\n  font-weight: 900;\n  text-transform: capitalize;\n}\n.title-bar {\n  padding: 1rem;\n  color: $vue-text-color;\n  position: absolute;\n  top: 0;\n  left: 0;\n  text-align: center;\n  width: 100%;\n  box-shadow: $shadow;\n}\n.settings {\n  color: azure;\n  transition: 2s ease-in-out;\n  @include df(row, nowrap);\n  justify-content: space-between;\n  min-height: 20vh;\n  width: 100%;\n  position: absolute;\n  bottom: 0;\n  left: 0;\n  background: rgba($settingsBg, .7);\n  box-shadow: $shadow;\n\n  .slider-element-container {\n    margin: 1rem;\n    padding: 1rem;\n    @include df(column, nowrap);\n\n    h5 {\n      margin-bottom: 1rem;\n    }\n  }\n\n  .checkbox-element-container {\n    width: 30%;\n    @include df(column, nowrap, center, flex-start);\n    justify-self: flex-end;\n    padding: 0 2rem;\n    border-left: 3px solid black;\n    height: 20vh;\n    background: darken($settingsBg,15%);\n    font-size: 1.6rem;\n    color: azure;\n    div {\n      margin: 1rem 0;\n      @include df(row, nowrap);\n      input {\n        order: 1;\n        height: 1.6rem;\n        width: 1.6rem;\n      }\n      h5 {\n        margin-left: 1rem;\n        order: 2;\n      }\n    }\n  }\n  .fire-settings-element-container{\n    @include df(column,nowrap, space-evenly, center);\n    width: 30%;\n    padding: 0 2rem;\n    border-left: 3px solid black;\n    height: 20vh;\n    background: darken($settingsBg,15%);\n    font-size: 1.6rem;\n    color: azure;\n\n\n    div {\n      @include df(row,nowrap, center, center);\n      width: 100%;\n      height: 25%;\n      margin: 1rem;\n\n      input{\n        margin-left: 1.5rem;\n      }\n    }\n  }\n}\n\n#sidebar {\n  position: absolute;\n  right: 0;\n  @include df(column,nowrap);\n\n  #toggle{\n    width: 100px;\n    height: 100px;\n    background-color: $settingsBg;\n\n    box-shadow: $shadow;\n    @include df(row, nowrap);\n    color: $txtColor;\n    font-size: 2rem;\n    transition: .5s;\n\n    &:hover{\n      color: darken($txtColor,20%);\n      background-color: darken($settingsBg,20%);\n      font-size: 2.1rem;\n      cursor: pointer;\n    }\n  }\n  #home {\n    @extend #toggle;\n    a{\n      text-decoration: none;\n      //color: $txtColor;\n      color: inherit;\n    }\n  }\n  #toggleHP {\n    @extend #toggle;\n  }\n}\n\n.d-n {\n  display: none;\n}\n\ninput[type=range] {\n  -webkit-appearance: none;\n  position: relative\n}\n\ninput[type=range]::-webkit-slider-runnable-track {\n  width: 300px;\n  height: 2px;\n  border: none;\n  border-radius: 3px\n}\n\ninput[type=range]::-webkit-slider-thumb {\n  -webkit-appearance: none;\n  border: none;\n  height: 12px;\n  width: 12px;\n  border-radius: 510%;\n  background: #141414;\n  border: 2px solid #515151;\n  margin-top: -5px;\n  cursor: pointer\n}\n\n.focused::-webkit-slider-thumb {\n  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.15)\n}\n\n.clicked::-webkit-slider-thumb {\n  -webkit-transform: scale(1.5)\n}\n\n.disabled::-webkit-slider-thumb {\n  -webkit-transform: scale(0.9);\n  box-shadow: 0 0 0 3px #141414;\n  background: #515151 !important;\n  border-color: #515151 !important\n}\n\ninput[type=range]:focus {\n  outline: none\n}\n\n.rangeM input[type=range].disabled::-webkit-slider-runnable-track {\n  background: #515151!important\n}\n\n.rangeM input[type=range]::-webkit-slider-thumb {\n  background: #3f51b5;\n  border-color: #3f51b5\n}\n\n.range:hover input[type=range]:before {\n  color: white;\n  content: '50';\n  position: absolute;\n  font-family: Roboto Slab;\n  top: -49px;\n  background: #3f51b5;\n  padding: 8px 0 3px;\n  font-size: 14px;\n  width: 30px;\n  text-align: center;\n  border-radius: 100% 100% 0 0\n}\n\n.range:hover input[type=range]:after {\n  content: '';\n  position: absolute;\n  top: -19px;\n  left: 50px;\n  border-left: 15px solid transparent;\n  border-right: 15px solid transparent;\n  border-top: 8px solid #3f51b5;\n  font-family: Roboto Slab\n}\n\n.personStats {\n  position: absolute;\n  top: 0;\n  left: 0;\n  height: 20vh;\n  width: 30%;\n  //border: 3px solid red;\n  @include df(row , nowrap, flex-start, center);\n  background-color: #545353;\n  border-radius: 0 0 40px 0;\n  overflow: hidden;\n  box-shadow: $shadow;\n\n  img {\n    width: 40%;\n    overflow: hidden;\n    border-radius: 40px;\n    border: 3px azure solid;\n  }\n  div{\n    width: 60%;\n    height: 100%;\n    @include df(row , wrap, flex-start, center);\n\n    .hp {\n      height: 20%;\n      width: 100%;\n      background-color: #f68989;\n      .hp-progress {\n        background-color: #d72121;\n        width: 50%;\n        height: 100%;\n        z-index: 10;\n        border-radius: 0 40px 40px 0;\n      }\n    }\n    .mp {\n      height: 20%;\n      width: 100%;\n      background-color: #7f86d9;\n      .mp-progress {\n        background-color: #2133d7;\n        width: 50%;\n        height: 100%;\n        z-index: 10;\n        border-radius: 0 40px 40px 0;\n      }\n    }\n    .exp {\n      height: 20%;\n      width: 100%;\n      background-color: #5e3c79;\n      .exp-progress {\n        background-color: #560d83;\n        width: 50%;\n        height: 100%;\n        z-index: 10;\n        border-radius: 0 40px 40px 0;\n      }\n    }\n  }\n\n}\n\n\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nbody {\n  margin: 0;\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  background-color: #aacaf3;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: column nowrap;\n  font-family: Arial, Helvetica, sans-serif;\n}\n\nh1 {\n  font-size: 3rem;\n  font-weight: 900;\n  text-transform: capitalize;\n}\n\n.title-bar {\n  padding: 1rem;\n  color: #2c3e50;\n  position: absolute;\n  top: 0;\n  left: 0;\n  text-align: center;\n  width: 100%;\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n}\n\n.settings {\n  color: azure;\n  transition: 2s ease-in-out;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n  justify-content: space-between;\n  min-height: 20vh;\n  width: 100%;\n  position: absolute;\n  bottom: 0;\n  left: 0;\n  background: rgba(84, 83, 83, 0.7);\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n}\n.settings .slider-element-container {\n  margin: 0.8rem;\n  padding: 1rem;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: column nowrap;\n}\n.settings .slider-element-container h5 {\n  margin-bottom: 1rem;\n}\n.settings .checkbox-element-container {\n  width: 30%;\n  display: flex;\n  align-items: flex-start;\n  justify-content: center;\n  flex-flow: column nowrap;\n  justify-self: flex-end;\n  padding: 0 2rem;\n  border-left: 3px solid black;\n  height: 20vh;\n  background: #2e2d2d;\n  font-size: 1.2rem;\n  color: azure;\n}\n.settings .checkbox-element-container div {\n  margin: 1rem 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n}\n.settings .checkbox-element-container div input {\n  order: 1;\n  height: 1.6rem;\n  width: 1.6rem;\n}\n.settings .checkbox-element-container div h5 {\n  margin-left: 1rem;\n  order: 2;\n}\n.settings .fire-settings-element-container {\n  display: flex;\n  align-items: center;\n  justify-content: space-evenly;\n  flex-flow: column nowrap;\n  width: 30%;\n  padding: 0 2rem;\n  border-left: 3px solid black;\n  height: 20vh;\n  background: #2e2d2d;\n  font-size: 1.2rem;\n  color: azure;\n}\n.settings .fire-settings-element-container div {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n  width: 100%;\n  height: 25%;\n  margin: 1rem;\n}\n.settings .fire-settings-element-container div input {\n  margin-left: 1.5rem;\n}\n\n#sidebar {\n  position: absolute;\n  right: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: column nowrap;\n}\n#sidebar #toggle, #sidebar #toggleHP, #sidebar #home {\n  width: 100px;\n  height: 100px;\n  background-color: #545353;\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-flow: row nowrap;\n  color: azure;\n  font-size: 2rem;\n  transition: 0.5s;\n}\n#sidebar #toggle:hover, #sidebar #toggleHP:hover, #sidebar #home:hover {\n  color: #8affff;\n  background-color: #212020;\n  font-size: 2.1rem;\n  cursor: pointer;\n}\n#sidebar #home a {\n  text-decoration: none;\n  color: inherit;\n}\n.d-n {\n  display: none;\n}\n\ninput[type=range] {\n  -webkit-appearance: none;\n  position: relative;\n}\n\ninput[type=range]::-webkit-slider-runnable-track {\n  width: 300px;\n  height: 2px;\n  border: none;\n  border-radius: 3px;\n}\n\ninput[type=range]::-webkit-slider-thumb {\n  -webkit-appearance: none;\n  border: none;\n  height: 12px;\n  width: 12px;\n  border-radius: 510%;\n  background: #141414;\n  border: 2px solid #515151;\n  margin-top: -5px;\n  cursor: pointer;\n}\n\n.focused::-webkit-slider-thumb {\n  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.15);\n}\n\n.clicked::-webkit-slider-thumb {\n  -webkit-transform: scale(1.5);\n}\n\n.disabled::-webkit-slider-thumb {\n  -webkit-transform: scale(0.9);\n  box-shadow: 0 0 0 3px #141414;\n  background: #515151 !important;\n  border-color: #515151 !important;\n}\n\ninput[type=range]:focus {\n  outline: none;\n}\n\n.rangeM input[type=range].disabled::-webkit-slider-runnable-track {\n  background: #515151 !important;\n}\n\n.rangeM input[type=range]::-webkit-slider-thumb {\n  background: #3f51b5;\n  border-color: #3f51b5;\n}\n\n.range:hover input[type=range]:before {\n  color: white;\n  content: \"50\";\n  position: absolute;\n  font-family: Roboto Slab;\n  top: -49px;\n  background: #3f51b5;\n  padding: 8px 0 3px;\n  font-size: 14px;\n  width: 30px;\n  text-align: center;\n  border-radius: 100% 100% 0 0;\n}\n\n.range:hover input[type=range]:after {\n  content: \"\";\n  position: absolute;\n  top: -19px;\n  left: 50px;\n  border-left: 15px solid transparent;\n  border-right: 15px solid transparent;\n  border-top: 8px solid #3f51b5;\n  font-family: Roboto Slab;\n}\n\n.personStats {\n  position: absolute;\n  top: 0;\n  left: 0;\n  height: 20vh;\n  width: 30%;\n  display: flex;\n  align-items: center;\n  justify-content: flex-start;\n  flex-flow: row nowrap;\n  background-color: #545353;\n  border-radius: 0 0 40px 0;\n  overflow: hidden;\n  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n}\n.personStats img {\n  width: 40%;\n  overflow: hidden;\n  border-radius: 40px;\n  border: 3px azure solid;\n}\n.personStats div {\n  width: 60%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: flex-start;\n  flex-flow: row wrap;\n}\n.personStats div .hp {\n  height: 20%;\n  width: 100%;\n  background-color: #f68989;\n}\n.personStats div .hp::after {\n  content: \"HP\";\n  position: absolute;\n  left: 50%;\n  font-size: 2rem;\n  z-index: 20;\n  color: azure;\n}\n.personStats div .hp .hp-progress {\n  background-color: #d72121;\n  width: 100%;\n  height: 100%;\n  z-index: 10;\n  border-radius: 0 40px 40px 0;\n}\n.personStats div .mp {\n  height: 20%;\n  width: 100%;\n  background-color: #7f86d9;\n}\n.personStats div .mp::after {\n  content: \"MP\";\n  position: absolute;\n  left: 50%;\n  font-size: 2rem;\n  z-index: 20;\n  color: azure;\n}\n.personStats div .mp .mp-progress {\n  background-color: #2133d7;\n  width: 75%;\n  height: 100%;\n  z-index: 10;\n  border-radius: 0 40px 40px 0;\n}\n.personStats div .exp {\n  height: 20%;\n  width: 100%;\n  background-color: #5e3c79;\n}\n.personStats div .exp::after {\n  content: \"EXP\";\n  position: absolute;\n  left: 50%;\n  font-size: 2rem;\n  z-index: 20;\n  color: azure;\n}\n.personStats div .exp .exp-progress {\n  background-color: #560d83;\n  width: 50%;\n  height: 100%;\n  z-index: 10;\n  border-radius: 0 40px 40px 0;\n}", "",{"version":3,"sources":["webpack://./src/style.scss"],"names":[],"mappings":"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","sourcesContent":["$bg: #aacaf3;\n$vue-text-color: #2c3e50;\n$shadow: 0px 0px 5px rgba(0, 0, 0, 0.56);\n$shadow2: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;\n$shadow3: rgba(0, 0, 0, 0.08) 0px 4px 12px;\n\n$txtColor: azure;\n$settingsBg: #545353;\n\n@mixin df ($dir,$wrap,$x: center,$y: center){\n  display: flex;\n  align-items: $y;\n  justify-content: $x;\n  flex-flow: $dir $wrap;\n}\n\n\n* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\nbody {\n  margin: 0;\n  padding: 0;\n  width: 100%;\n  height: 100%;\n  background-color: $bg;\n  @include df(column,nowrap);\n  font-family: Arial, Helvetica, sans-serif;\n}\n\nh1  {\n  font-size: 3rem;\n  font-weight: 900;\n  text-transform: capitalize;\n}\n.title-bar {\n  padding: 1rem;\n  color: $vue-text-color;\n  position: absolute;\n  top: 0;\n  left: 0;\n  text-align: center;\n  width: 100%;\n  box-shadow: $shadow;\n}\n.settings {\n  color: azure;\n  transition: 2s ease-in-out;\n  @include df(row, nowrap);\n  justify-content: space-between;\n  min-height: 20vh;\n  width: 100%;\n  position: absolute;\n  bottom: 0;\n  left: 0;\n  background: rgba($settingsBg, .7);\n  box-shadow: $shadow;\n\n  .slider-element-container {\n    margin: .8rem;\n    padding: 1rem;\n    @include df(column, nowrap);\n\n    h5 {\n      margin-bottom: 1rem;\n    }\n  }\n\n  .checkbox-element-container {\n    width: 30%;\n    @include df(column, nowrap, center, flex-start);\n    justify-self: flex-end;\n    padding: 0 2rem;\n    border-left: 3px solid black;\n    height: 20vh;\n    background: darken($settingsBg,15%);\n    font-size: 1.2rem;\n    color: azure;\n    div {\n      margin: 1rem 0;\n      @include df(row, nowrap);\n      input {\n        order: 1;\n        height: 1.6rem;\n        width: 1.6rem;\n      }\n      h5 {\n        margin-left: 1rem;\n        order: 2;\n      }\n    }\n  }\n  .fire-settings-element-container{\n    @include df(column,nowrap, space-evenly, center);\n    width: 30%;\n    padding: 0 2rem;\n    border-left: 3px solid black;\n    height: 20vh;\n    background: darken($settingsBg,15%);\n    font-size: 1.2rem;\n    color: azure;\n\n\n    div {\n      @include df(row,nowrap, center, center);\n      width: 100%;\n      height: 25%;\n      margin: 1rem;\n\n      input{\n        margin-left: 1.5rem;\n      }\n    }\n  }\n}\n\n#sidebar {\n  position: absolute;\n  right: 0;\n  @include df(column,nowrap);\n\n  #toggle{\n    width: 100px;\n    height: 100px;\n    background-color: $settingsBg;\n\n    box-shadow: $shadow;\n    @include df(row, nowrap);\n    color: $txtColor;\n    font-size: 2rem;\n    transition: .5s;\n\n    &:hover{\n      color: darken($txtColor,20%);\n      background-color: darken($settingsBg,20%);\n      font-size: 2.1rem;\n      cursor: pointer;\n    }\n  }\n  #home {\n    @extend #toggle;\n    a{\n      text-decoration: none;\n      //color: $txtColor;\n      color: inherit;\n    }\n  }\n  #toggleHP {\n    @extend #toggle;\n  }\n}\n\n.d-n {\n  display: none;\n}\n\ninput[type=range] {\n  -webkit-appearance: none;\n  position: relative\n}\n\ninput[type=range]::-webkit-slider-runnable-track {\n  width: 300px;\n  height: 2px;\n  border: none;\n  border-radius: 3px\n}\n\ninput[type=range]::-webkit-slider-thumb {\n  -webkit-appearance: none;\n  border: none;\n  height: 12px;\n  width: 12px;\n  border-radius: 510%;\n  background: #141414;\n  border: 2px solid #515151;\n  margin-top: -5px;\n  cursor: pointer\n}\n\n.focused::-webkit-slider-thumb {\n  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.15)\n}\n\n.clicked::-webkit-slider-thumb {\n  -webkit-transform: scale(1.5)\n}\n\n.disabled::-webkit-slider-thumb {\n  -webkit-transform: scale(0.9);\n  box-shadow: 0 0 0 3px #141414;\n  background: #515151 !important;\n  border-color: #515151 !important\n}\n\ninput[type=range]:focus {\n  outline: none\n}\n\n.rangeM input[type=range].disabled::-webkit-slider-runnable-track {\n  background: #515151!important\n}\n\n.rangeM input[type=range]::-webkit-slider-thumb {\n  background: #3f51b5;\n  border-color: #3f51b5\n}\n\n.range:hover input[type=range]:before {\n  color: white;\n  content: '50';\n  position: absolute;\n  font-family: Roboto Slab;\n  top: -49px;\n  background: #3f51b5;\n  padding: 8px 0 3px;\n  font-size: 14px;\n  width: 30px;\n  text-align: center;\n  border-radius: 100% 100% 0 0\n}\n\n.range:hover input[type=range]:after {\n  content: '';\n  position: absolute;\n  top: -19px;\n  left: 50px;\n  border-left: 15px solid transparent;\n  border-right: 15px solid transparent;\n  border-top: 8px solid #3f51b5;\n  font-family: Roboto Slab\n}\n\n.personStats {\n  position: absolute;\n  top: 0;\n  left: 0;\n  height: 20vh;\n  width: 30%;\n  //border: 3px solid red;\n  @include df(row , nowrap, flex-start, center);\n  background-color: #545353;\n  border-radius: 0 0 40px 0;\n  overflow: hidden;\n  box-shadow: $shadow;\n\n  img {\n    width: 40%;\n    overflow: hidden;\n    border-radius: 40px;\n    border: 3px azure solid;\n  }\n  div{\n    width: 60%;\n    height: 100%;\n    @include df(row , wrap, flex-start, center);\n\n    .hp {\n      height: 20%;\n      width: 100%;\n      background-color: #f68989;\n      &::after{\n        content: 'HP';\n        position: absolute;\n        //top: 1rem;\n         left: 50%;\n\n        font-size: 2rem;\n        z-index: 20;\n        color: azure;\n      }\n\n      .hp-progress {\n        background-color: #d72121;\n        width: 100%;\n        height: 100%;\n        z-index: 10;\n        border-radius: 0 40px 40px 0;\n\n      }\n    }\n    .mp {\n      height: 20%;\n      width: 100%;\n      background-color: #7f86d9;\n      &::after{\n        content: 'MP';\n        position: absolute;\n        //top: 1rem;\n        left: 50%;\n\n        font-size: 2rem;\n        z-index: 20;\n        color: azure;\n      }\n\n      .mp-progress {\n        background-color: #2133d7;\n        width: 75%;\n        height: 100%;\n        z-index: 10;\n        border-radius: 0 40px 40px 0;\n      }\n    }\n    .exp {\n      height: 20%;\n      width: 100%;\n      background-color: #5e3c79;\n      &::after{\n        content: 'EXP';\n        position: absolute;\n        //top: 1rem;\n        left: 50%;\n\n        font-size: 2rem;\n        z-index: 20;\n        color: azure;\n      }\n\n      .exp-progress {\n        background-color: #560d83;\n        width: 50%;\n        height: 100%;\n        z-index: 10;\n        border-radius: 0 40px 40px 0;\n      }\n    }\n  }\n\n}\n\n\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -34,6 +1866,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  bo
   \*****************************************************/
 /***/ ((module) => {
 
+"use strict";
 
 
 /*
@@ -109,6 +1942,7 @@ module.exports = function (cssWithMappingToString) {
   \************************************************************************/
 /***/ ((module) => {
 
+"use strict";
 
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
@@ -144,12 +1978,194 @@ module.exports = function cssWithMappingToString(item) {
 
 /***/ }),
 
+/***/ "./node_modules/querystring/decode.js":
+/*!********************************************!*\
+  !*** ./node_modules/querystring/decode.js ***!
+  \********************************************/
+/***/ ((module) => {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+// If obj.hasOwnProperty has been overridden, then calling
+// obj.hasOwnProperty(prop) will break.
+// See: https://github.com/joyent/node/issues/1707
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+module.exports = function(qs, sep, eq, options) {
+  sep = sep || '&';
+  eq = eq || '=';
+  var obj = {};
+
+  if (typeof qs !== 'string' || qs.length === 0) {
+    return obj;
+  }
+
+  var regexp = /\+/g;
+  qs = qs.split(sep);
+
+  var maxKeys = 1000;
+  if (options && typeof options.maxKeys === 'number') {
+    maxKeys = options.maxKeys;
+  }
+
+  var len = qs.length;
+  // maxKeys <= 0 means that we should not limit keys count
+  if (maxKeys > 0 && len > maxKeys) {
+    len = maxKeys;
+  }
+
+  for (var i = 0; i < len; ++i) {
+    var x = qs[i].replace(regexp, '%20'),
+        idx = x.indexOf(eq),
+        kstr, vstr, k, v;
+
+    if (idx >= 0) {
+      kstr = x.substr(0, idx);
+      vstr = x.substr(idx + 1);
+    } else {
+      kstr = x;
+      vstr = '';
+    }
+
+    k = decodeURIComponent(kstr);
+    v = decodeURIComponent(vstr);
+
+    if (!hasOwnProperty(obj, k)) {
+      obj[k] = v;
+    } else if (Array.isArray(obj[k])) {
+      obj[k].push(v);
+    } else {
+      obj[k] = [obj[k], v];
+    }
+  }
+
+  return obj;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/querystring/encode.js":
+/*!********************************************!*\
+  !*** ./node_modules/querystring/encode.js ***!
+  \********************************************/
+/***/ ((module) => {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+var stringifyPrimitive = function(v) {
+  switch (typeof v) {
+    case 'string':
+      return v;
+
+    case 'boolean':
+      return v ? 'true' : 'false';
+
+    case 'number':
+      return isFinite(v) ? v : '';
+
+    default:
+      return '';
+  }
+};
+
+module.exports = function(obj, sep, eq, name) {
+  sep = sep || '&';
+  eq = eq || '=';
+  if (obj === null) {
+    obj = undefined;
+  }
+
+  if (typeof obj === 'object') {
+    return Object.keys(obj).map(function(k) {
+      var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
+      if (Array.isArray(obj[k])) {
+        return obj[k].map(function(v) {
+          return ks + encodeURIComponent(stringifyPrimitive(v));
+        }).join(sep);
+      } else {
+        return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
+      }
+    }).join(sep);
+
+  }
+
+  if (!name) return '';
+  return encodeURIComponent(stringifyPrimitive(name)) + eq +
+         encodeURIComponent(stringifyPrimitive(obj));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/querystring/index.js":
+/*!*******************************************!*\
+  !*** ./node_modules/querystring/index.js ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+
+exports.decode = exports.parse = __webpack_require__(/*! ./decode */ "./node_modules/querystring/decode.js");
+exports.encode = exports.stringify = __webpack_require__(/*! ./encode */ "./node_modules/querystring/encode.js");
+
+
+/***/ }),
+
 /***/ "./src/style.scss":
 /*!************************!*\
   !*** ./src/style.scss ***!
   \************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
@@ -179,6 +2195,7 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
   \****************************************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 
 
 var isOldIE = function isOldIE() {
@@ -457,6 +2474,7 @@ module.exports = function (list, options) {
   \**************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "ACESFilmicToneMapping": () => (/* binding */ ACESFilmicToneMapping),
@@ -49859,6 +51877,7 @@ if ( typeof window !== 'undefined' ) {
   \**************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
@@ -50040,6 +52059,7 @@ Stats.Panel = function ( name, fg, bg ) {
   \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Animation)
@@ -50081,6 +52101,7 @@ class Animation {
   \**********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Camera)
@@ -50117,6 +52138,7 @@ class Camera {
   \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Collision)
@@ -50157,6 +52179,7 @@ class Collision {
   \**********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
@@ -50165,7 +52188,8 @@ __webpack_require__.r(__webpack_exports__);
     rotateLeft: false,
     rotateRight: false,
     moveForward: false,
-    moveBackward: false
+    moveBackward: false,
+    attack: false
 });
 
 
@@ -50177,21 +52201,22 @@ __webpack_require__.r(__webpack_exports__);
   \*********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Enemy)
 /* harmony export */ });
 /* harmony import */ var _MD2Loader__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./MD2Loader */ "./src/components/MD2Loader.js");
 /* harmony import */ var three__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
-/* harmony import */ var _assets_bobafett_prototype_fett_png__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./assets/bobafett/prototype_fett.png */ "./src/components/assets/bobafett/prototype_fett.png");
+/* harmony import */ var _assets_knight_bs_jpg__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./assets/knight/bs.jpg */ "./src/components/assets/knight/bs.jpg");
 /* harmony import */ var _Animation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Animation */ "./src/components/Animation.js");
 
 
 
 
 // import marioTex from "./assets/ogre/Ogre.png"
-//import marioTex from "./assets/knight/bs.jpg"
 
+// import marioTex from "./assets/bobafett/prototype_fett.png"
 
 
 
@@ -50203,7 +52228,37 @@ class Enemy {
         this.geometry = null
     }
 
-    load(path,x,y,z) {
+    // async load(path, x, y, z) {
+    //     //10000
+    //     // const light = new PointLight( 0xffffff, 5, 1000 );
+    //     // light.position.set( 50, 50, 50 );
+    //     // this.scene.add( light );
+    //     // Manager is passed in to loader to determine when loading done in main
+    //     // Load model with FBXLoader
+    //
+    //
+    //     await new MD2Loader(this.manager).load(
+    //         path,
+    //         geometry => {
+    //
+    //             this.geometry = geometry;
+    //
+    //             this.mesh = new Mesh(geometry, new MeshPhongMaterial({
+    //                 map: new TextureLoader().load(marioTex), // dowolny plik png, jpg
+    //                 morphTargets: true // animowanie materiału modelu
+    //             }))
+    //             // this.mesh.position.set(0,0,0);
+    //             this.moveTo(x, y, z)
+    //             this.scene.add(this.mesh);
+    //             console.log(this.geometry.animations) // tu powinny być widoczne animacje
+    //
+    //         },
+    //     );
+    //
+    // }
+
+
+     load(path, x, y, z) {
         //10000
         // const light = new PointLight( 0xffffff, 5, 1000 );
         // light.position.set( 50, 50, 50 );
@@ -50211,27 +52266,26 @@ class Enemy {
         // Manager is passed in to loader to determine when loading done in main
         // Load model with FBXLoader
 
-        new _MD2Loader__WEBPACK_IMPORTED_MODULE_0__.MD2Loader(this.manager).load(
+
+         new _MD2Loader__WEBPACK_IMPORTED_MODULE_0__.MD2Loader(this.manager).load(
             path,
             geometry => {
 
                 this.geometry = geometry;
 
                 this.mesh = new three__WEBPACK_IMPORTED_MODULE_3__.Mesh(geometry, new three__WEBPACK_IMPORTED_MODULE_3__.MeshPhongMaterial({
-                    map: new three__WEBPACK_IMPORTED_MODULE_3__.TextureLoader().load(_assets_bobafett_prototype_fett_png__WEBPACK_IMPORTED_MODULE_1__), // dowolny plik png, jpg
+                    map: new three__WEBPACK_IMPORTED_MODULE_3__.TextureLoader().load(_assets_knight_bs_jpg__WEBPACK_IMPORTED_MODULE_1__), // dowolny plik png, jpg
                     morphTargets: true // animowanie materiału modelu
                 }))
                 // this.mesh.position.set(0,0,0);
-                this.moveTo(x,y,z)
+                this.moveTo(x, y, z)
                 this.scene.add(this.mesh);
                 console.log(this.geometry.animations) // tu powinny być widoczne animacje
 
             },
-
         );
 
     }
-
     moveTo(x,y,z) {
         this.mesh.position.set(-500+50+x*50*2,y*50*2,-500+50+z*50*2)
         // this.mesh.position.set(-500,0,-500);
@@ -50251,6 +52305,7 @@ class Enemy {
   \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Fireplace)
@@ -50351,6 +52406,7 @@ class Fireplace extends three__WEBPACK_IMPORTED_MODULE_2__.Object3D {
   \*********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Floor)
@@ -50397,12 +52453,15 @@ class Floor {
   \*******************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ GUI)
 /* harmony export */ });
 class GUI {
     constructor() {
+
+        // ======================= AVATAR + HP + MP + EXP =======================
 
         let personStats = document.createElement('div');
         personStats.classList.add("personStats");
@@ -50421,6 +52480,8 @@ class GUI {
         personStats.append(cont);
         document.body.append(personStats);
 
+
+        // ========================= SIDEBAR OPTIONS =========================
 
         let sidebar = document.createElement('div');
         sidebar.id="sidebar";
@@ -50449,9 +52510,14 @@ class GUI {
 
         document.body.append(sidebar);
 
+
+
+        // ========================= SETTINGS OPTIONS =========================
+
         let settings = document.createElement('div');
         settings.classList.add('settings')
 
+        // ========= CAMERA SETTINGS =========
         let sliders = ['Camera height', 'Camera X angle','Distance form person', 'Camera view angle Y', 'Camera  fov', 'Light intensity'];
         let chbxs = ['Shadows', 'View From Top', 'Camera behind player'];
         sliders.forEach( silderTitle => {
@@ -50487,6 +52553,7 @@ class GUI {
             settings.append(div)
         })
 
+        // ========= FIREPLACE SETTINGS =========
         let fireplaceSettings = document.createElement('div');
         fireplaceSettings.classList.add('fire-settings-element-container');
 
@@ -50507,6 +52574,23 @@ class GUI {
         fireplaceSettings.append(row3)
         settings.append(fireplaceSettings)
 
+
+        // ========= LASER SETTINGS =========
+        let laserSettings = document.createElement('div');
+        laserSettings.classList.add('fire-settings-element-container');
+        let row1_laser = document.createElement('div');
+        this.createDescription(row1_laser,'Laser Size')
+        this.createInput(row1_laser, 'Laser Size',1,100,50);
+
+        let row2_laser = document.createElement('div');
+        this.createDescription(row2_laser,'Laser Wiggle')
+        this.createInput(row2_laser, 'Laser Wiggle',1,100,50);
+
+        laserSettings.append(row1_laser);
+        laserSettings.append(row2_laser);
+        settings.append(laserSettings)
+
+        // ========= CHECKBOXES SETTINGS =========
         let checkboxes = document.createElement('div');
         checkboxes.classList.add('checkbox-element-container');
 
@@ -50558,12 +52642,18 @@ class GUI {
   \************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Keyboard)
 /* harmony export */ });
 /* harmony import */ var _Animation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Animation */ "./src/components/Animation.js");
 /* harmony import */ var _Config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Config */ "./src/components/Config.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var querystring__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! querystring */ "./node_modules/querystring/index.js");
+
+
 
 
 
@@ -50622,8 +52712,9 @@ class Keyboard {
         switch (event.keyCode) {
             case KEYS.up:
             case KEYS.w:
+                if (!_Config__WEBPACK_IMPORTED_MODULE_1__.default.moveForward) this.animation.playAnim("run")
                 _Config__WEBPACK_IMPORTED_MODULE_1__.default.moveForward = true;
-                this.animation.playAnim("run")
+
                 break;
             case KEYS.left:
             case KEYS.a:
@@ -50635,11 +52726,14 @@ class Keyboard {
                 break;
             case KEYS.down:
             case KEYS.s:
+                if (!_Config__WEBPACK_IMPORTED_MODULE_1__.default.moveBackward) this.animation.playAnim("crwalk")
                 _Config__WEBPACK_IMPORTED_MODULE_1__.default.moveBackward = true;
-                this.animation.playAnim("crwalk")
                 break;
             case KEYS.spacebar:
-
+                 this.animation.playAnim("crattak")
+                _Config__WEBPACK_IMPORTED_MODULE_1__.default.attack = true;
+                axios__WEBPACK_IMPORTED_MODULE_2___default().post('http://localhost:5000/attack', querystring__WEBPACK_IMPORTED_MODULE_3__.stringify({ albumName: 'playlist' })
+                )
                 break;
         }
 
@@ -50657,6 +52751,7 @@ class Keyboard {
   \*********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Laser)
@@ -50685,11 +52780,14 @@ class Laser {
 
         this.v1 = fromVector;
         this.v2 = destinationVector;
-        console.log(this.v1, this.v2);
+
         this.subV = this.v2.clone().sub(this.v1.clone());
         this.particlesCount = 1000;
         let stepV = this.subV.divideScalar(this.particlesCount); // particlesCount - przewidywana ilość cząsteczek na linii a-b
         this.stepV = stepV;
+
+        console.log(this.v1, this.v2, " || ", this.subV,this.stepV);
+
         this.laser(this.particlesCount, this.verticesArray, this.particlesGeometry, this.particleMaterial, this.scene);
 
         this.laserPositions = this.particlesGeometry.attributes.position.array;
@@ -50715,6 +52813,7 @@ class Laser {
         // z geometrii i materiału typu Points
 
         this.mesh = new three__WEBPACK_IMPORTED_MODULE_1__.Points(particlesGeometry,particleMaterial)
+        this.mesh.name = "laser";
         scene.add(this.mesh)
     }
 
@@ -50738,7 +52837,12 @@ class Laser {
         this.particlesGeometry.attributes.position.needsUpdate = true
     }
     delete(){
+        this.scene.children.filter(mesh => mesh.name !== 'laser')
+        console.log(this.mesh)
         this.scene.remove(this.mesh)
+    }
+    deleteAll(){
+        this.scene.children = this.scene.children.filter(mesh => mesh.name !== 'laser')
     }
 }
 
@@ -50751,6 +52855,7 @@ class Laser {
   \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "MD2Loader": () => (/* binding */ MD2Loader)
@@ -51164,16 +53269,17 @@ MD2Loader.prototype = Object.assign( Object.create( three__WEBPACK_IMPORTED_MODU
   \********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Main)
 /* harmony export */ });
-/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
+/* harmony import */ var three__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! three */ "./node_modules/three/build/three.module.js");
 /* harmony import */ var _Model__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Model */ "./src/components/Model.js");
 /* harmony import */ var _Keyboard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Keyboard */ "./src/components/Keyboard.js");
 /* harmony import */ var _Animation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Animation */ "./src/components/Animation.js");
 /* harmony import */ var _Config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Config */ "./src/components/Config.js");
-/* harmony import */ var three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! three/examples/jsm/libs/stats.module.js */ "./node_modules/three/examples/jsm/libs/stats.module.js");
+/* harmony import */ var three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! three/examples/jsm/libs/stats.module.js */ "./node_modules/three/examples/jsm/libs/stats.module.js");
 /* harmony import */ var _Renderer__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Renderer */ "./src/components/Renderer.js");
 /* harmony import */ var _Camera__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Camera */ "./src/components/Camera.js");
 /* harmony import */ var _GUI__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./GUI */ "./src/components/GUI.js");
@@ -51187,6 +53293,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Fireplace__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./Fireplace */ "./src/components/Fireplace.js");
 /* harmony import */ var _Collision__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./Collision */ "./src/components/Collision.js");
 /* harmony import */ var _Laser__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./Laser */ "./src/components/Laser.js");
+/* harmony import */ var _assets_fire_png__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./assets/fire.png */ "./src/components/assets/fire.png");
 
 
 
@@ -51209,6 +53316,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 class Main {
 
     constructor(container) {
@@ -51217,7 +53325,7 @@ class Main {
         this.animation = null
 
         this.container = container;
-        this.scene = new three__WEBPACK_IMPORTED_MODULE_17__.Scene();
+        this.scene = new three__WEBPACK_IMPORTED_MODULE_18__.Scene();
         this.renderer = new _Renderer__WEBPACK_IMPORTED_MODULE_4__.default(this.scene, container);
         this.camera = new _Camera__WEBPACK_IMPORTED_MODULE_5__.default(this.renderer.threeRenderer);
         this.cameraHeight = 50;
@@ -51237,24 +53345,24 @@ class Main {
         // ==================== GRID ====================
         // testowa siatka na podłoże modelu
 
-        const gridHelper = new three__WEBPACK_IMPORTED_MODULE_17__.GridHelper(1000, 10);
+        const gridHelper = new three__WEBPACK_IMPORTED_MODULE_18__.GridHelper(1000, 10);
         this.scene.add(gridHelper);
 
         // ==================== STATS ====================
         // statystyki wydajności
 
-        this.stats = new three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_18__.default();
+        this.stats = new three_examples_jsm_libs_stats_module_js__WEBPACK_IMPORTED_MODULE_19__.default();
         this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb
 
         document.body.appendChild(this.stats.dom);
 
         // ==================== ZEGAR ====================
 
-        this.clock = new three__WEBPACK_IMPORTED_MODULE_17__.Clock()
+        this.clock = new three__WEBPACK_IMPORTED_MODULE_18__.Clock()
 
         // manager loadingu, pozwala monitorować progress oraz fakt zakończenia ładowania
 
-        this.manager = new three__WEBPACK_IMPORTED_MODULE_17__.LoadingManager();
+        this.manager = new three__WEBPACK_IMPORTED_MODULE_18__.LoadingManager();
 
         // ==================== MODEL ====================
 
@@ -51292,7 +53400,7 @@ class Main {
 
 
         // ==================== EXAMPLE LEVEL ====================
-        this.level = [{"id":0,"x":1,"y":0,"z":1,"type":"wall"},{"id":1,"x":8,"y":0,"z":1,"type":"wall"},{"id":2,"x":8,"y":0,"z":8,"type":"wall"},{"id":3,"x":1,"y":0,"z":8,"type":"wall"},{"id":4,"x":1,"y":0,"z":7,"type":"wall"},{"id":5,"x":1,"y":0,"z":6,"type":"wall"},{"id":6,"x":1,"y":0,"z":2,"type":"wall"},{"id":7,"x":1,"y":0,"z":3,"type":"wall"},{"id":8,"x":2,"y":0,"z":8,"type":"wall"},{"id":9,"x":3,"y":0,"z":8,"type":"wall"},{"id":10,"x":6,"y":0,"z":8,"type":"wall"},{"id":11,"x":7,"y":0,"z":8,"type":"wall"},{"id":12,"x":8,"y":0,"z":7,"type":"wall"},{"id":13,"x":8,"y":0,"z":6,"type":"wall"},{"id":14,"x":8,"y":0,"z":2,"type":"wall"},{"id":15,"x":8,"y":0,"z":3,"type":"wall"},{"id":16,"x":7,"y":0,"z":1,"type":"wall"},{"id":17,"x":6,"y":0,"z":1,"type":"wall"},{"id":18,"x":2,"y":0,"z":1,"type":"wall"},{"id":19,"x":3,"y":0,"z":1,"type":"wall"},{"id":20,"x":2,"y":0,"z":2,"type":"light"},{"id":21,"x":2,"y":0,"z":7,"type":"light"},{"id":22,"x":7,"y":0,"z":7,"type":"light"},{"id":23,"x":7,"y":0,"z":2,"type":"light"},{"id":24,"x":4,"y":0,"z":4,"type":"treasure"},{"id":25,"x":5,"y":0,"z":4,"type":"treasure"},{"id":26,"x":5,"y":0,"z":5,"type":"treasure"},{"id":27,"x":4,"y":0,"z":5,"type":"treasure"},{"id":28,"x":0,"y":0,"z":0,"type":"light"},{"id":29,"x":9,"y":0,"z":0,"type":"light"},{"id":30,"x":9,"y":0,"z":9,"type":"light"},{"id":31,"x":0,"y":0,"z":9,"type":"light"}]
+        this.level = [{"id":0,"x":2,"y":0,"z":2,"type":"light"},{"id":0,"x":1,"y":0,"z":1,"type":"wall"},{"id":1,"x":8,"y":0,"z":1,"type":"wall"},{"id":2,"x":8,"y":0,"z":8,"type":"wall"},{"id":3,"x":1,"y":0,"z":8,"type":"wall"},{"id":4,"x":1,"y":0,"z":7,"type":"wall"},{"id":5,"x":1,"y":0,"z":6,"type":"wall"},{"id":6,"x":1,"y":0,"z":2,"type":"wall"},{"id":7,"x":1,"y":0,"z":3,"type":"wall"},{"id":8,"x":2,"y":0,"z":8,"type":"wall"},{"id":9,"x":3,"y":0,"z":8,"type":"wall"},{"id":10,"x":6,"y":0,"z":8,"type":"wall"},{"id":11,"x":7,"y":0,"z":8,"type":"wall"},{"id":12,"x":8,"y":0,"z":7,"type":"wall"},{"id":13,"x":8,"y":0,"z":6,"type":"wall"},{"id":14,"x":8,"y":0,"z":2,"type":"wall"},{"id":15,"x":8,"y":0,"z":3,"type":"wall"},{"id":16,"x":7,"y":0,"z":1,"type":"wall"},{"id":17,"x":6,"y":0,"z":1,"type":"wall"},{"id":18,"x":2,"y":0,"z":1,"type":"wall"},{"id":19,"x":3,"y":0,"z":1,"type":"wall"},{"id":20,"x":2,"y":0,"z":2,"type":"light"},{"id":21,"x":2,"y":0,"z":7,"type":"light"},{"id":22,"x":7,"y":0,"z":7,"type":"light"},{"id":23,"x":7,"y":0,"z":2,"type":"light"},{"id":24,"x":4,"y":0,"z":4,"type":"treasure"},{"id":25,"x":5,"y":0,"z":4,"type":"treasure"},{"id":26,"x":5,"y":0,"z":5,"type":"treasure"},{"id":27,"x":4,"y":0,"z":5,"type":"treasure"},{"id":28,"x":0,"y":0,"z":0,"type":"light"},{"id":29,"x":9,"y":0,"z":0,"type":"light"},{"id":30,"x":9,"y":0,"z":9,"type":"light"},{"id":31,"x":0,"y":0,"z":9,"type":"light"}]
 
 
         this.floor = new _Floor__WEBPACK_IMPORTED_MODULE_8__.default(this.scene);
@@ -51347,31 +53455,88 @@ class Main {
         })
 
         document.body.onkeydown = (e)=> {
-            if (e.keyCode === 32){
-                this.laser = new _Laser__WEBPACK_IMPORTED_MODULE_16__.default(this.scene);
-                console.log(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z);
-                let playerPosVector = new three__WEBPACK_IMPORTED_MODULE_17__.Vector3(this.model.mesh.position.x, this.model.mesh.position.y, this.model.mesh.position.z);
-                // let destinationVect = playerPosVect.clone().add(new Vector3(100,0,0));
-                let destinationVector = new three__WEBPACK_IMPORTED_MODULE_17__.Vector3(this.model.mesh.position.x+100,0,0);
-                // let destinationVect = new Vector3(this.model.mesh.position.x+100, this.model.mesh.position.y, this.model.mesh.position.z);
-                // let destinationVect = new Vector3(this.model.mesh.position.x+100, 0, this.model.mesh.position.z);
-                // console.log( destinationVect ,playerPosVect);
-                this.laser.shoot(  playerPosVector, destinationVector );
-
+            let isOnStage = false;
+            this.scene.children.forEach(m=> {
+                if (m.name === 'laser') isOnStage = true
+            })
+            if (e.keyCode === 32 && !isOnStage){
+                // this.laser = new Laser(this.scene);
+                // console.log(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z);
+                // let playerPosVector = new Vector3(this.model.mesh.position.x, this.model.mesh.position.y, this.model.mesh.position.z);
+                // // let destinationVect = playerPosVect.clone().add(new Vector3(100,0,0));
+                // let destinationVector = new Vector3(this.model.mesh.position.x+100,this.model.mesh.position.y,this.model.mesh.position.z);
+                //
+                // // console.log( destinationVect ,playerPosVect);
+                // this.laser.shoot(  playerPosVector, destinationVector );
+                // // this.laser.shoot( new Vector3(100,0,0), new Vector3(300,0,0))
+                this.l1.visible = true;
                 setTimeout( ()=>{
-                    this.laser.delete();
+                    // this.laser.delete();
+                    // this.laser.deleteAll();
+                    this.l1.visible = false;
                 }, 1000 )
             }
         }
 
+
+        // =============== Laser ===============
+        this.verticesArray1 = new Float32Array(1000 * 3)
+        this.particlesGeometry1 = new three__WEBPACK_IMPORTED_MODULE_18__.BufferGeometry()
+
+        this.particleMaterial1 = new three__WEBPACK_IMPORTED_MODULE_18__.PointsMaterial({
+            // color: 0x3ae03a,
+            // color: 0xff00ff,
+            color: 0x6622ee,
+            depthWrite: false,
+            transparent: true,
+            size: 20,
+            map: new three__WEBPACK_IMPORTED_MODULE_18__.TextureLoader().load(_assets_fire_png__WEBPACK_IMPORTED_MODULE_17__),
+            blending: three__WEBPACK_IMPORTED_MODULE_18__.AdditiveBlending
+        })
+
+
+
+        const v1 = new three__WEBPACK_IMPORTED_MODULE_18__.Vector3(0, 0, 0)
+        const v2 = new three__WEBPACK_IMPORTED_MODULE_18__.Vector3(200, 0, 0)
+        const subV = v2.clone().sub(v1.clone())
+
+        this.particlesCount1 = 1000
+        const stepV = subV.divideScalar(this.particlesCount1) // particlesCount - przewidywana ilość cząsteczek na linii a-b
+        this.stepV = stepV;
+
+        function laser(particlesCount, verticesArray, particlesGeometry, particleMaterial,scene){
+
+            for (let i = 0; i < particlesCount; i+=3) {
+
+                verticesArray[i] = i*stepV.x
+                verticesArray[i+1] = 0
+                verticesArray[i+2] = i*stepV.z
+
+            }
+            // console.log(verticesArray)
+            // poniższa linia przypisuje geometrii naszą tablicę punktów
+
+            particlesGeometry.setAttribute("position", new three__WEBPACK_IMPORTED_MODULE_18__.BufferAttribute(verticesArray, 3))
+
+            // z geometrii jak zawsze powstaje mesh, złożony
+            // z geometrii i materiału typu Points
+
+            const mesh1 = new three__WEBPACK_IMPORTED_MODULE_18__.Points(particlesGeometry,particleMaterial)
+            scene.add(mesh1)
+            return mesh1;
+        }
+
+        this.l1 = laser(this.particlesCount1,this.verticesArray1,this.particlesGeometry1,this.particleMaterial1,this.scene)
+        this.l1.visible = false;
     }
 
 
     async generateMap() {
        this.level = await this.net.getMap()
         // console.log("LV",this.level)
-
-        this.level.forEach( (field) => {
+        let couter = 0
+        this.level.forEach(  (field) => {
+            console.log(field.type)
             if (field.type === 'wall'){
 
                 let w1 = new _Wall__WEBPACK_IMPORTED_MODULE_9__.default(this.scene, field.x,0,field.z);
@@ -51395,12 +53560,18 @@ class Main {
                 this.scene.add(firePlace)
 
             } else if (field.type === 'enemy'){
-                this.createEnemy(field)
+                this.createEnemy(field).then( obj =>{
+                    this.enemies.push(obj);
+                    // this.enemies[this.enemies.length-1].anim.playAnim("stand")
+                    console.log(this.enemies)
+                    console.log(couter++);
+                } )
                 // console.log(enemy_model)
             }
 
         })
         console.log(this.walls)
+        console.log(this.enemies)
 
 
     }
@@ -51412,24 +53583,30 @@ class Main {
 
     }
 
-    createEnemy(field){
-            this.enemyManager =  new three__WEBPACK_IMPORTED_MODULE_17__.LoadingManager();
-            this.enemy = new _Enemy__WEBPACK_IMPORTED_MODULE_13__.default(this.scene, this.enemyManager);
-            // ogre.load("./dist/assets/ogre.md2",field.x,0,field.z);
-            // ogre.load("./dist/assets/knight.md2",field.x,0,field.z);
-            this.enemy.load("./dist/assets/boba.md2",field.x,0,field.z);
-            this.enemyManager.onProgress = (item, loaded, total) => {
+     createEnemy(field){
+        return new Promise(resolve => {
+            console.log(field)
+            let enemyManager =  new three__WEBPACK_IMPORTED_MODULE_18__.LoadingManager();
+            console.log(enemyManager)
+            let enemy = new _Enemy__WEBPACK_IMPORTED_MODULE_13__.default(this.scene, enemyManager);
+
+            enemy.load("./dist/assets/knight.md2",field.x,0,field.z);
+            enemyManager.onProgress = (item, loaded, total) => {
                 console.log(`progress ${item}: ${loaded} ${total}`);
             };
-            this.enemyManager.onLoad = () => {
+            enemyManager.onLoad = () => {
                 // this.isLoaded = true;
                 console.log("ENEMY LOADED!!!")
-                let enemyAnimation = new _Animation__WEBPACK_IMPORTED_MODULE_2__.default(this.enemy.mesh)
-                enemyAnimation.playAnim("crwalk")
-                // this.enemies.push(this.enemy)
-            };
+                let enemyAnimation = new _Animation__WEBPACK_IMPORTED_MODULE_2__.default(enemy.mesh)
+                enemyAnimation.playAnim("stand")
+                console.log({ model: enemy, anim:enemyAnimation })
 
-        // console.log(this.enemy, this.enemies)
+                resolve({ model: enemy, anim:enemyAnimation })
+            };
+        })
+
+
+        // console.log("=========================== ",this.enemies,"=========================== ")
     }
     render() {
 
@@ -51442,19 +53619,27 @@ class Main {
 
         // wykonanie funkcji update w module Animations - zobacz do pliku Animations
         if (this.animation) this.animation.update(delta)
-        // if(this.enemies) console.log(this.enemies, this.enemy) // dla kaazdego enemy analogicznie do this.animation.update(delta)
+        if(this.enemies.length >= 1) {
+            // this.enemies[0].anim.update(delta)
+            this.enemies.forEach(enemy => enemy.anim.update(delta))
+            // console.log(this.enemies)
+        }  // dla kazdego enemy analogicznie do this.animation.update(delta)
 
 
         this.renderer.render(this.scene, this.camera.threeCamera);
 
         // obsługa ruch modelu dopiero kiedy jest załadowany, można tą część umieścić w module Keyboard
         // tworząc w nim no prunkcję update() i wywoływać ją poniżej
-
-        // if(this.enemies[0].obj.mesh) this.enemies[0].anim.playAnim("crwalk")
+        // console.log(this.enemies)
+        // if(this.enemies[0])  this.enemies[0].anim.playAnim("crwalk")
         if (this.model.mesh) {
-//
+            // console.log(this.model.mesh)
+            this.l1.position.set(this.model.mesh.position.x,this.model.mesh.position.y,this.model.mesh.position.z)
             if ( !this.playerWallCollision )
                 this.playerWallCollision = new _Collision__WEBPACK_IMPORTED_MODULE_15__.default(this.model.mesh, this.walls)
+
+            // if ( !this.playerEnemyCollision && this.enemies.length >=1)
+            //     this.playerEnemyCollision = new Collision(this.model.mesh, this.enemies)
 
 
             if (this.walls.length > 0){
@@ -51467,14 +53652,33 @@ class Main {
                     else this.collisionStopper = 1
 
                 })
+                    // this.walls.forEach( w=>{
+                    //
+                    //     if (this.collision(this.model.mesh, w.mesh)){
+                    //         this.collisionStopper = 0
+                    //     } else this.collisionStopper = 1
+                    // })
 
             }
+
+            // if ( this.enemies.length >= 1 ){
+            //     this.playerEnemyCollision.update(element =>{
+            //         if (element.distance < 100){
+            //         //    TODO play animation
+            //             let index = this.enemies.indexOf(element)
+            //             this.enemies[index].anim.playAnim("crattak")
+            //         }
+            //     })
+            // }
+
 
             if (_Config__WEBPACK_IMPORTED_MODULE_3__.default.rotateLeft) {
                 this.model.mesh.rotation.y += 0.05
+                this.l1.rotation.y += 0.05
             }
             if (_Config__WEBPACK_IMPORTED_MODULE_3__.default.rotateRight) {
                 this.model.mesh.rotation.y -= 0.05
+                this.l1.rotation.y -= 0.05
             }
             if (_Config__WEBPACK_IMPORTED_MODULE_3__.default.moveForward) {
                 this.model.mesh.translateX(3*this.collisionStopper);
@@ -51483,7 +53687,7 @@ class Main {
                 this.model.mesh.translateX(-3)
             }
             // const camVect = new Vector3(-100, 50, 0)
-            const camVect = new three__WEBPACK_IMPORTED_MODULE_17__.Vector3(-this.cameraXangle, this.cameraHeight, this.cameraZangle-50)
+            const camVect = new three__WEBPACK_IMPORTED_MODULE_18__.Vector3(-this.cameraXangle, this.cameraHeight, this.cameraZangle-50)
 
             const camPos = camVect.applyMatrix4(this.model.mesh.matrixWorld);
             if (this.viewMode === 'normal'){
@@ -51514,12 +53718,44 @@ class Main {
     }
     enableShadows(){
      this.renderer.threeRenderer.shadowMap.enabled = true
-     this.renderer.threeRenderer.shadowMap.type = three__WEBPACK_IMPORTED_MODULE_17__.PCFSoftShadowMap;
+     this.renderer.threeRenderer.shadowMap.type = three__WEBPACK_IMPORTED_MODULE_18__.PCFSoftShadowMap;
         console.log(this.scene.children)
      this.scene.children.forEach( ch => {
          ch.castShadow = true
          if (ch.children) ch.children.forEach(c => c.castShadow = true)
      })
+    }
+    collision(model, d) {
+        // console.log(a)
+        // let b1 = a.position.y - a.geometry.parameters.height / 2;
+        // let t1 = a.position.y + a.geometry.parameters.height / 2;
+        // let r1 = a.position.x + a.geometry.parameters.width / 2;
+        // let l1 = a.position.x - a.geometry.parameters.width / 2;
+        // let f1 = a.position.z - a.geometry.parameters.depth / 2;
+        // let B1 = a.position.z + a.geometry.parameters.depth / 2;
+        // let b2 = d.position.y - d.geometry.parameters.height / 2;
+        // let t2 = d.position.y + d.geometry.parameters.height / 2;
+        // let r2 = d.position.x + d.geometry.parameters.width / 2;
+        // let l2 = d.position.x - d.geometry.parameters.width / 2;
+        // let f2 = d.position.z - d.geometry.parameters.depth / 2;
+        // let B2 = d.position.z + d.geometry.parameters.depth / 2;
+        // console.log( model.box.min, model.box.max, model.box.getSize() );
+        let b1 = model.position.y - model.box.geometry.parameters.height / 2;
+        let t1 = model.position.y + model.box.geometry.parameters.height / 2;
+        let r1 = model.position.x + model.box.geometry.parameters.width / 2;
+        let l1 = model.position.x - model.box.geometry.parameters.width / 2;
+        let f1 = model.position.z - model.box.geometry.parameters.depth / 2;
+        let B1 = model.position.z + model.box.geometry.parameters.depth / 2;
+        let b2 = d.position.y - d.geometry.parameters.height / 2;
+        let t2 = d.position.y + d.geometry.parameters.height / 2;
+        let r2 = d.position.x + d.geometry.parameters.width / 2;
+        let l2 = d.position.x - d.geometry.parameters.width / 2;
+        let f2 = d.position.z - d.geometry.parameters.depth / 2;
+        let B2 = d.position.z + d.geometry.parameters.depth / 2;
+        if (t1 < b2 || r1 < l2 || b1 > t2 || l1 > r2 || f1 > B2 || B1 < f2) {
+            return false;
+        }
+        return true;
     }
 }
 
@@ -51533,6 +53769,7 @@ class Main {
   \*********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Model)
@@ -51551,7 +53788,8 @@ class Model {
         this.scene = scene;
         this.mesh = null;
         this.manager = manager;
-        this.geometry = null
+        this.geometry = null;
+        this.box = null;
     }
 
     load(path) {
@@ -51575,6 +53813,7 @@ class Model {
                 this.mesh.position.set(0,0,0);
                 this.mesh.castShadow = true;
                 this.mesh.receiveShadow = true;
+                this.box = new three__WEBPACK_IMPORTED_MODULE_2__.Mesh(new three__WEBPACK_IMPORTED_MODULE_2__.BoxGeometry(10,10,10), new three__WEBPACK_IMPORTED_MODULE_2__.MeshNormalMaterial({}))
                 this.scene.add(this.mesh);
 
 
@@ -51601,6 +53840,7 @@ class Model {
   \*******************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Net)
@@ -51685,6 +53925,7 @@ class Net {
   \************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Particle)
@@ -51754,6 +53995,7 @@ class Particle extends three__WEBPACK_IMPORTED_MODULE_0__.Sprite {
   \************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Renderer)
@@ -51793,6 +54035,7 @@ class Renderer {
   \********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Roof)
@@ -51851,6 +54094,7 @@ class Roof {
   \*********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Torch)
@@ -51940,6 +54184,7 @@ class Torch{
   \************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Treasure)
@@ -51996,6 +54241,7 @@ class Treasure{
   \********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Wall)
@@ -52053,6 +54299,7 @@ class Wall {
   \***********************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "02dc25d734c52be29441.png";
 
 /***/ }),
@@ -52063,7 +54310,19 @@ module.exports = __webpack_require__.p + "02dc25d734c52be29441.png";
   \****************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "9f7a1179419675f14a95.png";
+
+/***/ }),
+
+/***/ "./src/components/assets/knight/bs.jpg":
+/*!*********************************************!*\
+  !*** ./src/components/assets/knight/bs.jpg ***!
+  \*********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "649cebbedf7fa5a54572.jpg";
 
 /***/ }),
 
@@ -52073,6 +54332,7 @@ module.exports = __webpack_require__.p + "9f7a1179419675f14a95.png";
   \*********************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "ffee80ef7d056152eb93.jpg";
 
 /***/ }),
@@ -52083,6 +54343,7 @@ module.exports = __webpack_require__.p + "ffee80ef7d056152eb93.jpg";
   \*******************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "5e731b139baddeca2bea.jpg";
 
 /***/ })
@@ -52188,8 +54449,9 @@ module.exports = __webpack_require__.p + "5e731b139baddeca2bea.jpg";
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
+"use strict";
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
